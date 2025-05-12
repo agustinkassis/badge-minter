@@ -4,4 +4,5 @@ export interface BadgeDefinition {
   description: string
   image: string
   pubkey: string
+  naddr: string
 }

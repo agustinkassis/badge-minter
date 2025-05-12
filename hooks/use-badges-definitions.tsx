@@ -3,6 +3,7 @@
 import { BadgeDefinition } from '@/types/badge'
 import { useSubscription } from 'nostr-hooks'
 import { BadgeDefinition as BadgeDefinitionKind } from 'nostr-tools/kinds'
+import { naddrEncode } from 'nostr-tools/nip19'
 import { useEffect, useState } from 'react'
 
 interface UseBadgesDefinitionsProps {
@@ -44,12 +45,19 @@ export const useBadgeDefinitions = ({
     if (events) {
       setBadges(
         events.map(event => {
+          const identifier = event.tagValue('d')!
+          const naddr = naddrEncode({
+            identifier,
+            pubkey: event.pubkey,
+            kind: BadgeDefinitionKind
+          })
           return {
-            id: event.tagValue('d')!,
+            id: identifier,
             name: event.tagValue('name') || 'No name',
             description: event.tagValue('description') || 'No description',
             image: event.tagValue('image') || 'No image',
-            pubkey: event.pubkey
+            pubkey: event.pubkey,
+            naddr: naddr
           } as BadgeDefinition
         })
       )
