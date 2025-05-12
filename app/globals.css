@@ -1,0 +1,222 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 294 100% 98%;
+    --foreground: 240 10% 11%;
+
+    --card: 294 100% 98%;
+    --card-foreground: 240 10% 11%;
+
+    --popover: 294 100% 98%;
+    --popover-foreground: 240 10% 11%;
+
+    --primary: 270 100% 71%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 142 67% 90%;
+    --secondary-foreground: 240 10% 11%;
+
+    --muted: 294 70% 96%;
+    --muted-foreground: 240 5% 34%;
+
+    --accent: 48 100% 74%;
+    --accent-foreground: 240 10% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 270 100% 71%;
+    --input: 270 100% 71%;
+    --ring: 270 100% 71%;
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 240 10% 11%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 11%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 11%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 270 100% 71%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 142 67% 90%;
+    --secondary-foreground: 240 10% 11%;
+
+    --muted: 240 5% 34%;
+    --muted-foreground: 240 5% 65%;
+
+    --accent: 48 100% 74%;
+    --accent-foreground: 240 10% 11%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 270 100% 71%;
+    --input: 270 100% 71%;
+    --ring: 270 100% 71%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-inter), sans-serif;
+  }
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-montserrat), sans-serif;
+    font-weight: 800;
+    text-transform: uppercase;
+  }
+}
+
+.flamingo {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D9ACFF'%3E%3Cpath d='M11 7C11 5.11438 11.6201 3.27631 12.7071 1.87868C13.5771 0.756124 15 0 15 0C15 0 14.1716 1.17157 14.1716 3C14.1716 4.17157 14.7461 5.17157 15.5 6C16.7686 7.39493 19 8 19 8L18.5 9C18.5 9 17 9 16 9C15 9 14 10 14 12C14 14 14 16 14 16C14 16 13 16 13 15C13 14 13 10.5 13 10.5C13 10.5 12 11 12 15C12 17.5 10 19 10 19C10 19 12 17.5 12 13.5C12 9.5 13 8 13 8C13 8 13 7 11 7ZM19 8C19 8 19 9 20 9C21 9 21.5 9 21.5 9L22 8C22 8 21 8 20 7.5C19 7 19 8 19 8ZM2 22C2 22 12 22 12 15C12 13 11 12 10 12C9 12 8 13 8 15C8 17 10 18 10 18C10 18 9 19 7 19C4 19 4 17 4 17C4 17 6 17 6 14C6 11 9 10 11 12C11.5 12.5 12 13 12 15C12 18 10 20 10 20C10 20 6 20 2 22Z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  opacity: 0.7;
+  z-index: -1;
+}
+
+.flamingo-1 {
+  top: 10%;
+  right: 5%;
+  transform: rotate(15deg);
+}
+
+.flamingo-2 {
+  bottom: 15%;
+  left: 7%;
+  transform: rotate(-10deg) scale(0.8);
+}
+
+.flamingo-3 {
+  top: 40%;
+  left: 3%;
+  transform: rotate(5deg) scale(1.2);
+}
+
+.lightning {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23C16DFF'%3E%3Cpath d='M13 9h9l-10 13v-9h-9l10-13z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-size: contain;
+  z-index: -1;
+}
+
+.lightning-1 {
+  top: 20%;
+  right: 10%;
+  transform: rotate(15deg);
+}
+
+.lightning-2 {
+  bottom: 25%;
+  right: 15%;
+  transform: rotate(-10deg) scale(0.8);
+}
+
+.card-mint {
+  background-color: theme('colors.secondary.DEFAULT');
+  border-radius: theme('borderRadius.lg');
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-lavender {
+  background-color: theme('colors.primary.DEFAULT');
+  color: theme('colors.primary.foreground');
+  border-radius: theme('borderRadius.lg');
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-yellow {
+  background-color: theme('colors.accent.DEFAULT');
+  border-radius: theme('borderRadius.lg');
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.card-pink {
+  background-color: #ffdbf5;
+  border-radius: theme('borderRadius.lg');
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.btn-pill {
+  @apply rounded-full font-bold uppercase tracking-wider px-6 py-3 transition-all;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Button press effect */
+.button-press-effect {
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+.button-press-effect:active {
+  transform: scale(0.97);
+  box-shadow:
+    0 2px 3px -1px rgba(0, 0, 0, 0.1),
+    0 1px 2px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Add this to make buttons feel more responsive */
+button,
+.btn-pill,
+[role='button'] {
+  transition: all 0.2s ease;
+}
+
+button:active,
+.btn-pill:active,
+[role='button']:active {
+  transform: scale(0.97);
+}
+
+/* Hover effects for cards */
+.card-mint,
+.card-lavender,
+.card-yellow,
+.card-pink {
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.card-mint:hover,
+.card-lavender:hover,
+.card-yellow:hover,
+.card-pink:hover {
+  transform: translateY(-2px);
+}
