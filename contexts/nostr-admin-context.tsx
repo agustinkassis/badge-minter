@@ -11,6 +11,7 @@ import { useRouter } from 'next/navigation'
 import { useNdk } from 'nostr-hooks'
 import { getPublicKey, nip19 } from 'nostr-tools'
 import { hexToBytes, bytesToHex } from '@noble/hashes/utils'
+import { BadgeDefinition } from '@/types/badge'
 
 interface NostrAdminContextType {
   privateKey: string | null
@@ -21,6 +22,8 @@ interface NostrAdminContextType {
   isAuthenticated: boolean
   isLoading: boolean
   error: Error | null
+  currentBadge: BadgeDefinition | null
+  setCurrentBadge: (badge: BadgeDefinition | null) => void
 }
 
 const NostrAdminContext = createContext<NostrAdminContextType | undefined>(
@@ -34,6 +37,7 @@ export function NostrAdminProvider({ children }: { children: ReactNode }) {
   const [npubAddress, setNpubAddress] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+  const [currentBadge, setCurrentBadge] = useState<BadgeDefinition | null>(null)
 
   const { initNdk, ndk } = useNdk()
 
@@ -73,16 +77,16 @@ export function NostrAdminProvider({ children }: { children: ReactNode }) {
         setError(null)
 
         // Remove "nsec" prefix if present
-        const privateKeyBytes = privateKey.startsWith('nsec')
-          ? nip19.decode(privateKey).data
-          : hexToBytes(privateKey)
+        const privateKeyBytes = (
+          privateKey.startsWith('nsec')
+            ? nip19.decode(privateKey).data
+            : hexToBytes(privateKey)
+        ) as Uint8Array<ArrayBufferLike>
 
         // Store in sessionStorage
         sessionStorage.setItem('nostrPrivateKey', bytesToHex(privateKeyBytes))
 
         // Derive public key using nostr-tools
-
-        console.info('privateKey', privateKeyBytes)
 
         const derivedPublicKey = getPublicKey(privateKeyBytes)
         setPublicKey(derivedPublicKey)
@@ -123,7 +127,9 @@ export function NostrAdminProvider({ children }: { children: ReactNode }) {
     clearKeys,
     isAuthenticated: !!privateKey && !!publicKey,
     isLoading,
-    error
+    error,
+    currentBadge,
+    setCurrentBadge
   }
 
   return (

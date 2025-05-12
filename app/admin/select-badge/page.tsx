@@ -10,52 +10,14 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import { ArrowLeft, BadgeCheck, AlertCircle } from 'lucide-react'
+import { ArrowLeft, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useProfile } from 'nostr-hooks'
 import { motion } from 'framer-motion'
-
-// Mock data for POV tokens - would be fetched from Nostr in real implementation
-const mockBadges = [
-  {
-    id: '1',
-    name: 'Event Attendee',
-    description: 'Attended our awesome event',
-    image: '/colorful-event-badges.png'
-  },
-  {
-    id: '2',
-    name: 'VIP Access',
-    description: 'VIP access to all areas',
-    image: '/colorful-vip-badge.png'
-  },
-  {
-    id: '3',
-    name: 'Workshop Participant',
-    description: 'Participated in our workshop',
-    image: '/colorful-badge-workshop.png'
-  },
-  {
-    id: '4',
-    name: 'Speaker',
-    description: 'Spoke at our conference',
-    image: '/colorful-badge-speaker.png'
-  },
-  {
-    id: '5',
-    name: 'Hackathon Winner',
-    description: 'Won our hackathon challenge',
-    image: '/colorful-winner-badge.png'
-  },
-  {
-    id: '6',
-    name: 'Community Member',
-    description: 'Active community participant',
-    image: '/colorful-badge-community.png'
-  }
-]
+import { useBadgeDefinitions } from '@/hooks/use-badges-definitions'
+import { BadgeDefinition } from '@/components/badge-definition'
 
 // Animation variants
 const containerVariants = {
@@ -65,19 +27,6 @@ const containerVariants = {
     transition: {
       staggerChildren: 0.1,
       delayChildren: 0.3
-    }
-  }
-}
-
-const badgeVariants = {
-  hidden: { opacity: 0, y: 20 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      type: 'spring',
-      stiffness: 260,
-      damping: 20
     }
   }
 }
@@ -101,12 +50,12 @@ export default function SelectPOVPage() {
     isAuthenticated,
     publicKey,
     npubAddress,
-    error: adminError
+    error: adminError,
+    currentBadge,
+    setCurrentBadge
   } = useNostrAdmin()
-  const [badges, setBadges] = useState<any[]>([])
-  const [selectedBadge, setSelectedBadge] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
+  const { badges, isLoading } = useBadgeDefinitions({ pubkey: publicKey || '' })
 
   const { profile } = useProfile({ pubkey: publicKey || '' })
 
@@ -116,25 +65,7 @@ export default function SelectPOVPage() {
       router.push('/admin/setup')
       return
     }
-
-    // Fetch user profile and badges
-    const loadData = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-
-        // In a real implementation, we would fetch the user's badges from Nostr
-        setBadges(mockBadges)
-      } catch (err) {
-        console.error('Error loading data:', err)
-        setError(err instanceof Error ? err : new Error(String(err)))
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadData()
-  }, [isAuthenticated, publicKey, npubAddress, router])
+  }, [isAuthenticated, publicKey, router])
 
   // Set error from context
   useEffect(() => {
@@ -144,8 +75,8 @@ export default function SelectPOVPage() {
   }, [adminError])
 
   const handleContinue = () => {
-    if (selectedBadge) {
-      router.push(`/admin/qr-display?badgeId=${selectedBadge}`)
+    if (currentBadge) {
+      router.push(`/admin/qr-display`)
     }
   }
 
@@ -269,54 +200,19 @@ export default function SelectPOVPage() {
                   initial="hidden"
                   animate="show"
                 >
+                  <div className="col-span-full mb-4 text-md text-muted-foreground">
+                    Found <b>{badges.length}</b> badge definition
+                    {badges.length === 1 ? '' : 's'}
+                  </div>
+
                   {badges.map((badge, index) => (
-                    <motion.div
+                    <BadgeDefinition
                       key={badge.id}
-                      variants={badgeVariants}
-                      whileTap={{ scale: 0.98 }}
-                      className={`cursor-pointer rounded-lg border-2 p-4 transition-all hover:bg-white/50 ${
-                        selectedBadge === badge.id
-                          ? 'border-primary bg-white/50'
-                          : 'border-transparent'
-                      }`}
-                      onClick={() => setSelectedBadge(badge.id)}
-                    >
-                      <div className="flex flex-col items-center text-center">
-                        <motion.div
-                          className="mb-3 overflow-hidden rounded-full bg-white/70 p-2"
-                          initial={{ scale: 0.8, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          transition={{
-                            delay: 0.1 * index + 0.2,
-                            duration: 0.5
-                          }}
-                        >
-                          <img
-                            src={badge.image || '/placeholder.svg'}
-                            alt={badge.name}
-                            className="h-24 w-24 rounded-full object-cover"
-                          />
-                        </motion.div>
-                        <h3 className="font-bold uppercase">{badge.name}</h3>
-                        <p className="mt-1 text-sm text-muted-foreground">
-                          {badge.description}
-                        </p>
-                        {selectedBadge === badge.id && (
-                          <motion.div
-                            className="mt-2 text-primary"
-                            initial={{ scale: 0, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            transition={{
-                              type: 'spring',
-                              stiffness: 500,
-                              damping: 15
-                            }}
-                          >
-                            <BadgeCheck className="h-6 w-6 mx-auto" />
-                          </motion.div>
-                        )}
-                      </div>
-                    </motion.div>
+                      badge={badge}
+                      isSelected={currentBadge?.id === badge.id}
+                      setSelectedBadge={setCurrentBadge}
+                      index={index}
+                    />
                   ))}
                 </motion.div>
 
@@ -329,7 +225,7 @@ export default function SelectPOVPage() {
                   <motion.div whileTap={{ scale: 0.95 }}>
                     <Button
                       onClick={handleContinue}
-                      disabled={!selectedBadge}
+                      disabled={!currentBadge}
                       className="btn-pill bg-primary text-white hover:bg-primary/90"
                     >
                       CONTINUE TO QR DISPLAY

@@ -29,46 +29,6 @@ import { Toaster } from '@/components/ui/toaster'
 import { motion, AnimatePresence } from 'framer-motion'
 import nonceService from '@/lib/nonce-service'
 
-// Mock data for POV tokens - would be fetched from Nostr in real implementation
-const mockBadges = [
-  {
-    id: '1',
-    name: 'Event Attendee',
-    description: 'Attended our awesome event',
-    image: '/colorful-event-badges.png'
-  },
-  {
-    id: '2',
-    name: 'VIP Access',
-    description: 'VIP access to all areas',
-    image: '/colorful-vip-badge.png'
-  },
-  {
-    id: '3',
-    name: 'Workshop Participant',
-    description: 'Participated in our workshop',
-    image: '/colorful-badge-workshop.png'
-  },
-  {
-    id: '4',
-    name: 'Speaker',
-    description: 'Spoke at our conference',
-    image: '/colorful-badge-speaker.png'
-  },
-  {
-    id: '5',
-    name: 'Hackathon Winner',
-    description: 'Won our hackathon challenge',
-    image: '/colorful-winner-badge.png'
-  },
-  {
-    id: '6',
-    name: 'Community Member',
-    description: 'Active community participant',
-    image: '/colorful-badge-community.png'
-  }
-]
-
 // Mock user profiles for simulation
 const mockUsers = [
   {
@@ -217,9 +177,7 @@ export default function QRDisplayPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { isAuthenticated } = useNostrAdmin()
-  const badgeId = searchParams.get('badgeId')
   const [currentNonce, setCurrentNonce] = useState('')
-  const [currentBadge, setCurrentBadge] = useState<any>(null)
   const [copySuccess, setCopySuccess] = useState(false)
   const [claimers, setClaimers] = useState<any[]>([])
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -227,6 +185,8 @@ export default function QRDisplayPage() {
   const MAX_VISIBLE_CLAIMERS = 15
   const nonceRefreshInterval = useRef<NodeJS.Timeout | null>(null)
   const NONCE_REFRESH_INTERVAL = 2000 // 2 seconds
+
+  const { currentBadge } = useNostrAdmin()
 
   // Find the selected POV token
   useEffect(() => {
@@ -236,18 +196,10 @@ export default function QRDisplayPage() {
       return
     }
 
-    if (!badgeId) {
-      router.push('/admin/select-badge')
-      return
-    }
-
-    const badge = mockBadges.find(b => b.id === badgeId)
-    if (badge) {
-      setCurrentBadge(badge)
-    } else {
+    if (!currentBadge) {
       router.push('/admin/select-badge')
     }
-  }, [badgeId, router, isAuthenticated])
+  }, [router, isAuthenticated, currentBadge])
 
   // Initialize nonce and set up refresh interval
   useEffect(() => {
@@ -284,7 +236,7 @@ export default function QRDisplayPage() {
   }
 
   // Generate the claim URL with the current nonce
-  const claimUrl = `${window.location.origin}/claim?token=${currentNonce}&badgeId=${badgeId}`
+  const claimUrl = `${window.location.origin}/claim?token=${currentNonce}`
 
   // Copy claim URL to clipboard
   const copyToClipboard = () => {
