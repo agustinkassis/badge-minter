@@ -13,7 +13,6 @@ import {
 import { ArrowLeft, BadgeCheck, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useNostrAdmin } from '@/contexts/nostr-admin-context'
-import { fetchUserProfile } from '@/lib/nostr'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useProfile } from 'nostr-hooks'
 import { motion } from 'framer-motion'
@@ -107,10 +106,9 @@ export default function SelectPOVPage() {
   const [badges, setBadges] = useState<any[]>([])
   const [selectedBadge, setSelectedBadge] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [userProfile, setUserProfile] = useState<any>(null)
   const [error, setError] = useState<Error | null>(null)
 
-  const profile = useProfile({ pubkey: publicKey })
+  const { profile } = useProfile({ pubkey: publicKey || '' })
 
   useEffect(() => {
     // Check if user is authenticated
@@ -124,14 +122,6 @@ export default function SelectPOVPage() {
       try {
         setIsLoading(true)
         setError(null)
-
-        // In a real implementation, we would fetch the user profile from Nostr
-        // using the public key
-        const profile = await fetchUserProfile(publicKey)
-        setUserProfile({
-          ...profile,
-          pubkey: npubAddress // Use the npub address from context
-        })
 
         // In a real implementation, we would fetch the user's badges from Nostr
         setBadges(mockBadges)
@@ -196,8 +186,8 @@ export default function SelectPOVPage() {
                 transition={{ delay: 0.2, duration: 0.5 }}
               >
                 <img
-                  src={userProfile?.picture || '/colorful-profile-avatar.png'}
-                  alt={userProfile?.displayName || 'User'}
+                  src={profile?.picture || '/colorful-profile-avatar.png'}
+                  alt={profile?.displayName || 'User'}
                   className="h-16 w-16 rounded-full object-cover border-2 border-white"
                 />
               </motion.div>
@@ -208,7 +198,7 @@ export default function SelectPOVPage() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3, duration: 0.5 }}
                 >
-                  {userProfile?.displayName || 'Loading...'}
+                  {profile?.displayName || 'Loading...'}
                 </motion.h2>
                 <motion.p
                   className="text-sm text-white/80 truncate"
@@ -336,14 +326,15 @@ export default function SelectPOVPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.8, duration: 0.5 }}
                 >
-                  <Button
-                    onClick={handleContinue}
-                    disabled={!selectedBadge}
-                    className="btn-pill bg-primary text-white hover:bg-primary/90"
-                    whileTap={{ scale: 0.95 }}
-                  >
-                    CONTINUE TO QR DISPLAY
-                  </Button>
+                  <motion.div whileTap={{ scale: 0.95 }}>
+                    <Button
+                      onClick={handleContinue}
+                      disabled={!selectedBadge}
+                      className="btn-pill bg-primary text-white hover:bg-primary/90"
+                    >
+                      CONTINUE TO QR DISPLAY
+                    </Button>
+                  </motion.div>
                 </motion.div>
               </>
             )}

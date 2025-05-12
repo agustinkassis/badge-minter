@@ -97,27 +97,6 @@ export async function fetchUserBadges(pubkey: string): Promise<any[]> {
 }
 
 /**
- * Fetch a user's profile from the Nostr network
- * @param pubkey The public key to fetch the profile for
- * @returns User profile data
- */
-export async function fetchUserProfile(pubkey: string): Promise<any> {
-  // In a real implementation, we would:
-  // 1. Connect to relays
-  // 2. Query for the user's metadata event (kind 0)
-  // 3. Parse and return the profile data
-
-  // This is just a placeholder
-  return {
-    displayName: 'Sarah Johnson',
-    name: 'sarah',
-    about: 'Nostr enthusiast and event organizer',
-    picture: '/colorful-profile-avatar.png',
-    pubkey: pubkey
-  }
-}
-
-/**
  * Derive a public key from a private key
  * @param privateKey The Nostr private key (nsec)
  * @returns The corresponding public key (hex)

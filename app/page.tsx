@@ -160,18 +160,17 @@ export default function HomePage() {
             </CardContent>
             <CardFooter className="flex flex-col space-y-4 pt-2">
               <Link href="/admin/setup" className="w-full">
-                <Button
-                  className="w-full btn-pill bg-primary text-white hover:bg-primary/90 button-press-effect"
-                  size="lg"
-                >
-                  <motion.div
-                    className="flex items-center justify-center"
-                    whileTap={{ scale: 0.95 }}
+                <motion.div whileTap={{ scale: 0.95 }}>
+                  <Button
+                    className="w-full btn-pill bg-primary text-white hover:bg-primary/90 button-press-effect"
+                    size="lg"
                   >
-                    <Sparkles className="mr-2 h-4 w-4" />
-                    LET&apos;S START
-                  </motion.div>
-                </Button>
+                    <div className="flex items-center justify-center">
+                      <Sparkles className="mr-2 h-4 w-4" />
+                      LET&apos;S START
+                    </div>
+                  </Button>
+                </motion.div>
               </Link>
               <p className="text-sm text-center">
                 For event organizers to set up and manage proof of visit tokens
