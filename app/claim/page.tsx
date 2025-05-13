@@ -18,55 +18,16 @@ import { Label } from '@/components/ui/label'
 import { User, Cpu, CheckCircle, AlertCircle } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-
-// Mock data for POV tokens - would be fetched from Nostr in real implementation
-const mockBadges = [
-  {
-    id: '1',
-    name: 'Event Attendee',
-    description: 'Attended our awesome event',
-    image: '/colorful-event-badges.png'
-  },
-  {
-    id: '2',
-    name: 'VIP Access',
-    description: 'VIP access to all areas',
-    image: '/colorful-vip-badge.png'
-  },
-  {
-    id: '3',
-    name: 'Workshop Participant',
-    description: 'Participated in our workshop',
-    image: '/colorful-badge-workshop.png'
-  },
-  {
-    id: '4',
-    name: 'Speaker',
-    description: 'Spoke at our conference',
-    image: '/colorful-badge-speaker.png'
-  },
-  {
-    id: '5',
-    name: 'Hackathon Winner',
-    description: 'Won our hackathon challenge',
-    image: '/colorful-winner-badge.png'
-  },
-  {
-    id: '6',
-    name: 'Community Member',
-    description: 'Active community participant',
-    image: '/colorful-badge-community.png'
-  }
-]
+import { useBadge } from '@/hooks/use-badge'
+import { useNostrUser } from '@/contexts/nostr-user-context'
 
 export default function ClaimPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const token = searchParams.get('token')
-  const badgeId = searchParams.get('badgeId')
+  const naddr = searchParams.get('naddr') || undefined
   const [nostrAddress, setNostrAddress] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [currentBadge, setCurrentBadge] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [miningProgress, setMiningProgress] = useState(0)
   const [showMiningAnimation, setShowMiningAnimation] = useState(false)
@@ -74,20 +35,24 @@ export default function ClaimPage() {
     'mining' | 'verifying' | 'complete'
   >('mining')
   const miningInterval = useRef<NodeJS.Timeout | null>(null)
+  const { isLoading: isBadgeLoading, badge } = useBadge({ naddr })
+  const { currentBadge, setCurrentBadge } = useNostrUser()
 
   useEffect(() => {
-    if (!token || !badgeId) {
+    if (!token) {
       setError('Invalid or expired QR code')
       return
     }
+  }, [token])
 
-    const badge = mockBadges.find(b => b.id === badgeId)
-    if (badge) {
-      setCurrentBadge(badge)
-    } else {
+  useEffect(() => {
+    if (!isBadgeLoading && !badge) {
       setError('POV token not found')
     }
-  }, [token, badgeId])
+    if (badge) {
+      setCurrentBadge(badge)
+    }
+  }, [badge, isBadgeLoading, setCurrentBadge])
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -123,9 +88,7 @@ export default function ClaimPage() {
 
           // Wait a moment to show completion before redirecting
           setTimeout(() => {
-            const eventId =
-              'abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890'
-            router.push(`/claim/success?eventId=${eventId}&badgeId=${badgeId}`)
+            router.replace(`/claim/success`)
           }, 1000)
 
           return 100
@@ -197,10 +160,10 @@ export default function ClaimPage() {
     )
   }
 
-  if (!currentBadge) {
+  if (isBadgeLoading || !currentBadge) {
     return (
       <div className="container flex min-h-screen items-center justify-center">
-        Loading...
+        Loading badge definition...
       </div>
     )
   }
