@@ -16,7 +16,7 @@ import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useProfile } from 'nostr-hooks'
 import { motion } from 'framer-motion'
-import { useBadgeDefinitions } from '@/hooks/use-badges-definitions'
+import { useBadgesDefinitions } from '@/hooks/use-badges-definitions'
 import { BadgeDefinition } from '@/components/badge-definition'
 
 // Animation variants
@@ -55,7 +55,9 @@ export default function SelectPOVPage() {
     setCurrentBadge
   } = useNostrAdmin()
   const [error, setError] = useState<Error | null>(null)
-  const { badges, isLoading } = useBadgeDefinitions({ pubkey: publicKey || '' })
+  const { badges, isLoading } = useBadgesDefinitions({
+    pubkey: publicKey || ''
+  })
 
   const { profile } = useProfile({ pubkey: publicKey || '' })
 
