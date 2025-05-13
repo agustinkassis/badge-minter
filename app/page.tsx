@@ -15,7 +15,7 @@ import { Footer } from '@/components/footer'
 
 export default function HomePage() {
   return (
-    <div className="container relative flex min-h-screen flex-col items-center justify-center px-4 py-10 overflow-hidden">
+    <div className="relative flex min-h-screen flex-col items-center justify-center px-4 py-10 overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {/* Animated circles */}
