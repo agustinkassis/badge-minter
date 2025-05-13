@@ -173,7 +173,7 @@ export default function HomePage() {
                 </motion.div>
               </Link>
               <p className="text-sm text-center">
-                For event organizers to set up and manage proof of visit tokens
+                For event organizers to set up and manage proof of visit badges
               </p>
             </CardFooter>
           </Card>
@@ -186,7 +186,7 @@ export default function HomePage() {
         >
           <div className="card-yellow p-4 text-center hover:shadow-md transition-shadow">
             <p className="text-sm font-medium">
-              &quot;POV tokens are a fun way to verify attendance and build
+              &quot;POV badges are a fun way to verify attendance and build
               community!&quot;
             </p>
           </div>

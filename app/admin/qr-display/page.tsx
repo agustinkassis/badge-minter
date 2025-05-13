@@ -26,7 +26,7 @@ import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { useToast } from '@/hooks/use-toast'
 import { Toaster } from '@/components/ui/toaster'
 import { motion, AnimatePresence } from 'framer-motion'
-import nonceService from '@/lib/nonce-service'
+import { useAdminMint } from '@/hooks/use-admin-mint'
 
 // Mock user profiles for simulation
 const mockUsers = [
@@ -184,8 +184,9 @@ export default function QRDisplayPage() {
   const NONCE_REFRESH_INTERVAL = 2000 // 2 seconds
 
   const { isAuthenticated, currentBadge } = useNostrAdmin()
+  const { generateNonce } = useAdminMint()
 
-  // Find the selected POV token
+  // Find the selected POV badge
   useEffect(() => {
     // Check if user is authenticated
     if (!isAuthenticated) {
@@ -213,10 +214,8 @@ export default function QRDisplayPage() {
       if (nonceRefreshInterval.current) {
         clearInterval(nonceRefreshInterval.current)
       }
-      // Stop the nonce service cleanup interval
-      nonceService.stopCleanupInterval()
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update claim URL when nonce changes
   useEffect(() => {
@@ -232,7 +231,7 @@ export default function QRDisplayPage() {
   // Function to refresh the nonce
   const refreshNonce = () => {
     // Generate a new nonce
-    const newNonce = nonceService.generateNonce()
+    const newNonce = generateNonce()
     setCurrentNonce(newNonce)
   }
 
@@ -381,7 +380,7 @@ export default function QRDisplayPage() {
                 onClick={e => e.preventDefault()}
                 onKeyDown={e => e.preventDefault()}
                 tabIndex={-1}
-                aria-label="QR Code for claiming POV token"
+                aria-label="QR Code for claiming POV badge"
               >
                 {claimUrl ? (
                   <QRCode value={claimUrl} size={200} />
