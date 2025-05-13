@@ -13,6 +13,7 @@ import {
 import { CheckCircle, Share2, Trophy, Star, Award } from 'lucide-react'
 import Link from 'next/link'
 import { useNostrUser } from '@/contexts/nostr-user-context'
+import { Footer } from '@/components/footer'
 
 export default function SuccessPage() {
   const [error, setError] = useState<string | null>(null)
@@ -269,6 +270,8 @@ export default function SuccessPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Footer />
     </div>
   )
 }

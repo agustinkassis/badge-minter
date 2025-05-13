@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/card'
 import { Sparkles, Zap, Award, Star } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { Footer } from '@/components/footer'
 
 export default function HomePage() {
   return (
@@ -192,6 +193,13 @@ export default function HomePage() {
           </div>
         </motion.div>
       </div>
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 1.4 }}
+      >
+        <Footer />
+      </motion.div>
     </div>
   )
 }

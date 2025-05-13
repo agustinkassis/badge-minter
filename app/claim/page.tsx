@@ -21,6 +21,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useNostrUser } from '@/contexts/nostr-user-context'
 import { useNdk } from 'nostr-hooks'
 import { fetchBadge } from '@/lib/nostr'
+import { Footer } from '@/components/footer'
+import { motion } from 'framer-motion'
 
 export default function ClaimPage() {
   const searchParams = useSearchParams()
@@ -282,25 +284,50 @@ export default function ClaimPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="flex flex-col items-center justify-center">
-            <div className="bg-white/50 p-3 rounded-full mb-3">
-              <img
-                src={currentBadge.image || '/placeholder.svg'}
-                alt={currentBadge.name}
-                className="h-24 w-24 rounded-full object-cover"
-              />
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+          >
+            <div className="flex flex-col items-center justify-center">
+              <motion.div
+                className="bg-white/50 p-3 rounded-full mb-3"
+                animate={{
+                  y: [0, -10, 0]
+                }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: 0.4
+                }}
+              >
+                <img
+                  src={currentBadge.image || '/placeholder.svg'}
+                  alt={currentBadge.name}
+                  className="h-24 w-24 rounded-full object-cover"
+                />
+              </motion.div>
             </div>
-            <p className="text-sm text-muted-foreground">
-              {currentBadge.description}
-            </p>
-          </div>
+          </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="nostrAddress" className="font-bold uppercase">
-                Your Nostr Address
-              </Label>
-              <div className="relative">
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.2 }}
+              >
+                <Label htmlFor="nostrAddress" className="font-bold uppercase">
+                  Your Nostr Address
+                </Label>
+              </motion.div>
+              <motion.div
+                className="relative"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.3 }}
+              >
                 <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
                   <User className="h-5 w-5 text-primary" />
                 </div>
@@ -312,23 +339,42 @@ export default function ClaimPage() {
                   className="pl-10 border-primary"
                   required
                 />
-              </div>
-              <p className="text-xs text-muted-foreground">
+              </motion.div>
+              <motion.p
+                className="text-xs text-muted-foreground"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: 0.4 }}
+              >
                 Enter your Nostr public key (npub), profile (nprofile), or Nostr
                 address (name@domain.com)
-              </p>
+              </motion.p>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full btn-pill bg-primary text-white hover:bg-primary/90"
-              disabled={!nostrAddress || isLoading}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, delay: 0.6 }}
             >
-              {isLoading ? 'PROCESSING...' : 'MINT POV BADGE'}
-            </Button>
+              <Button
+                type="submit"
+                className="w-full btn-pill bg-primary text-white hover:bg-primary/90"
+                disabled={!nostrAddress || isLoading}
+              >
+                {isLoading ? 'PROCESSING...' : 'MINT POV BADGE'}
+              </Button>
+            </motion.div>
           </form>
         </CardContent>
       </Card>
+
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, delay: 0.4 }}
+      >
+        <Footer />
+      </motion.div>
     </div>
   )
 }
