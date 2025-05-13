@@ -18,8 +18,9 @@ import { Label } from '@/components/ui/label'
 import { User, Cpu, CheckCircle, AlertCircle } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useBadge } from '@/hooks/use-badge'
 import { useNostrUser } from '@/contexts/nostr-user-context'
+import { useNdk } from 'nostr-hooks'
+import { fetchBadge } from '@/lib/nostr'
 
 export default function ClaimPage() {
   const searchParams = useSearchParams()
@@ -35,7 +36,7 @@ export default function ClaimPage() {
     'mining' | 'verifying' | 'complete'
   >('mining')
   const miningInterval = useRef<NodeJS.Timeout | null>(null)
-  const { isLoading: isBadgeLoading, badge } = useBadge({ naddr })
+  const { ndk } = useNdk()
   const { currentBadge, setCurrentBadge } = useNostrUser()
 
   useEffect(() => {
@@ -46,13 +47,29 @@ export default function ClaimPage() {
   }, [nonce])
 
   useEffect(() => {
-    if (!isBadgeLoading && !badge) {
-      setError('POV nonce not found')
+    if (!ndk) {
+      return
     }
-    if (badge) {
-      setCurrentBadge(badge)
+    if (!naddr) {
+      setError('No naddr provided')
+      return
     }
-  }, [badge, isBadgeLoading, setCurrentBadge])
+    setIsLoading(true)
+
+    try {
+      fetchBadge(naddr, ndk).then(badge => {
+        if (badge) {
+          setCurrentBadge(badge)
+        } else {
+          setError('Badge not found')
+        }
+      })
+    } catch (error) {
+      setError('Error fetching badge')
+    } finally {
+      setIsLoading(false)
+    }
+  }, [naddr, ndk]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Cleanup interval on unmount
   useEffect(() => {
@@ -160,7 +177,7 @@ export default function ClaimPage() {
     )
   }
 
-  if (isBadgeLoading || !currentBadge) {
+  if (!currentBadge) {
     return (
       <div className="container flex min-h-screen items-center justify-center">
         Loading badge definition...
@@ -184,7 +201,7 @@ export default function ClaimPage() {
           <Card className="card-lavender border-none w-full max-w-md mx-auto">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-black tracking-tight text-white">
-                {miningStage === 'mining' && 'MINING POV BADGE'}
+                {miningStage === 'mining' && 'MINTING POV BADGE'}
                 {miningStage === 'verifying' && 'VERIFYING PROOF'}
                 {miningStage === 'complete' && 'PROOF VERIFIED!'}
               </CardTitle>
