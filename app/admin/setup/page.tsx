@@ -18,6 +18,7 @@ import { Eye, EyeOff, ArrowLeft, Key, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Footer } from '@/components/footer'
 
 export default function AdminSetupPage() {
   const router = useRouter()
@@ -131,7 +132,7 @@ export default function AdminSetupPage() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
-                Your private key is used to sign POV tokens. It never leaves
+                Your private key is used to sign POV badges. It never leaves
                 your device.
               </p>
             </div>
@@ -148,6 +149,7 @@ export default function AdminSetupPage() {
           </form>
         </CardContent>
       </Card>
+      <Footer />
     </div>
   )
 }
