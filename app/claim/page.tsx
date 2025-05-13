@@ -19,10 +19,11 @@ import { User, Cpu, CheckCircle, AlertCircle } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useNostrUser } from '@/contexts/nostr-user-context'
-import { useNdk } from 'nostr-hooks'
+import { useNdk, useProfile } from 'nostr-hooks'
 import { fetchBadge } from '@/lib/nostr'
 import { Footer } from '@/components/footer'
 import { motion } from 'framer-motion'
+import { nip19 } from 'nostr-tools'
 
 export default function ClaimPage() {
   const searchParams = useSearchParams()
@@ -32,11 +33,12 @@ export default function ClaimPage() {
   const [nostrAddress, setNostrAddress] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [miningProgress, setMiningProgress] = useState(0)
-  const [showMiningAnimation, setShowMiningAnimation] = useState(false)
-  const [miningStage, setMiningStage] = useState<
-    'mining' | 'verifying' | 'complete'
-  >('mining')
+  const [miningProgress, setClaimingProgress] = useState(0)
+  const [showMiningAnimation, setShowClaimingAnimation] = useState(false)
+  const [claimingStage, setClaimingStage] = useState<
+    'resolving' | 'claiming' | 'complete'
+  >('resolving')
+  const [resolvedPubkey, setResolvedPubkey] = useState<string | null>(null)
   const miningInterval = useRef<NodeJS.Timeout | null>(null)
   const { ndk } = useNdk()
   const { currentBadge, setCurrentBadge } = useNostrUser()
@@ -60,6 +62,9 @@ export default function ClaimPage() {
 
     try {
       fetchBadge(naddr, ndk).then(badge => {
+        console.info('BADGE')
+        console.dir(badge)
+
         if (badge) {
           setCurrentBadge(badge)
         } else {
@@ -82,19 +87,19 @@ export default function ClaimPage() {
     }
   }, [])
 
-  const startMiningAnimation = () => {
-    setShowMiningAnimation(true)
-    setMiningProgress(0)
-    setMiningStage('mining')
+  const startClaimingProcess = () => {
+    setShowClaimingAnimation(true)
+    setClaimingProgress(0)
+    setClaimingStage('resolving')
 
     // Simulate mining progress
     miningInterval.current = setInterval(() => {
-      setMiningProgress(prev => {
+      setClaimingProgress(prev => {
         const newProgress = prev + Math.random() * 5
 
         // First stage - mining (0-60%)
         if (newProgress >= 60 && prev < 60) {
-          setMiningStage('verifying')
+          setClaimingStage('claiming')
         }
 
         // Second stage - verifying (60-100%)
@@ -103,7 +108,7 @@ export default function ClaimPage() {
             clearInterval(miningInterval.current)
           }
 
-          setMiningStage('complete')
+          setClaimingStage('complete')
 
           // Wait a moment to show completion before redirecting
           setTimeout(() => {
@@ -118,7 +123,7 @@ export default function ClaimPage() {
     }, 100)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setError(null)
@@ -137,8 +142,55 @@ export default function ClaimPage() {
       return
     }
 
+    // Handle NIP-05 resolution
+    if (isValidEmailFormat) {
+      try {
+        const [name, domain] = nostrAddress.split('@')
+        const nip05Url = `https://${domain}/.well-known/nostr.json?name=${name}`
+
+        const response = await fetch(nip05Url)
+        if (!response.ok) {
+          throw new Error('Failed to resolve NIP-05 address')
+        }
+
+        const data = await response.json()
+        const pubkey = data.names[name]
+
+        if (!pubkey) {
+          throw new Error('NIP-05 address not found')
+        }
+
+        // Set the resolved pubkey to fetch profile
+        setResolvedPubkey(pubkey)
+
+        // Convert hex pubkey to npub format
+        const npub = nip19.npubEncode(pubkey)
+        setNostrAddress(npub)
+      } catch (error) {
+        setError(
+          'Failed to resolve NIP-05 address. Please try using your npub directly.'
+        )
+        setIsLoading(false)
+        return
+      }
+    } else if (isValidNostrFormat) {
+      try {
+        // Decode npub/nprofile to get pubkey
+        const decoded = nip19.decode(nostrAddress)
+        if (decoded.type === 'npub') {
+          setResolvedPubkey(decoded.data)
+        } else if (decoded.type === 'nprofile') {
+          setResolvedPubkey(decoded.data.pubkey)
+        }
+      } catch (error) {
+        setError('Invalid Nostr address format')
+        setIsLoading(false)
+        return
+      }
+    }
+
     // Start the mining animation
-    startMiningAnimation()
+    startClaimingProcess()
   }
 
   if (error) {
@@ -203,22 +255,22 @@ export default function ClaimPage() {
           <Card className="card-lavender border-none w-full max-w-md mx-auto">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-black tracking-tight text-white">
-                {miningStage === 'mining' && 'MINTING POV BADGE'}
-                {miningStage === 'verifying' && 'VERIFYING PROOF'}
-                {miningStage === 'complete' && 'PROOF VERIFIED!'}
+                {claimingStage === 'resolving' && 'RESOLVING NIP-05'}
+                {claimingStage === 'claiming' && 'CLAIMING BADGE'}
+                {claimingStage === 'complete' && 'BADGE AWARDED'}
               </CardTitle>
               <CardDescription className="text-white/80">
-                {miningStage === 'mining' && 'Creating your proof of visit...'}
-                {miningStage === 'verifying' &&
-                  'Verifying your proof on the Nostr network...'}
-                {miningStage === 'complete' &&
-                  'Your POV badge has been successfully mined!'}
+                {claimingStage === 'resolving' &&
+                  'Resolving your Nostr address...'}
+                {claimingStage === 'claiming' && 'Claiming your badge...'}
+                {claimingStage === 'complete' &&
+                  'Your POV badge has been successfully minted!'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex flex-col items-center justify-center">
                 <div className="relative w-32 h-32 mb-4">
-                  {miningStage !== 'complete' ? (
+                  {claimingStage !== 'complete' ? (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <Cpu className="h-16 w-16 text-white animate-pulse" />
                       <div
@@ -249,21 +301,21 @@ export default function ClaimPage() {
                 </div>
 
                 <div className="mt-4 text-center text-white/80 text-sm">
-                  {miningStage === 'mining' && (
+                  {claimingStage === 'resolving' && (
                     <div className="space-y-1">
-                      <p>Generating cryptographic proof...</p>
-                      <p>Computing hash values...</p>
+                      <p>Resolving NIP-05 address...</p>
+                      <p>Getting your Nostr profile...</p>
                     </div>
                   )}
-                  {miningStage === 'verifying' && (
+                  {claimingStage === 'claiming' && (
                     <div className="space-y-1">
-                      <p>Connecting to Nostr relays...</p>
-                      <p>Verifying badge authenticity...</p>
+                      <p>Generating claim event...</p>
+                      <p>Publishing to Relays...</p>
                     </div>
                   )}
-                  {miningStage === 'complete' && (
+                  {claimingStage === 'complete' && (
                     <div className="space-y-1">
-                      <p>Badge successfully claimed!</p>
+                      <p>Badge successfully minted!</p>
                       <p>Redirecting to your new badge...</p>
                     </div>
                   )}
