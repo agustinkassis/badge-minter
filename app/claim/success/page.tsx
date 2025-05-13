@@ -12,80 +12,30 @@ import {
 } from '@/components/ui/card'
 import { CheckCircle, Share2, Trophy, Star, Award } from 'lucide-react'
 import Link from 'next/link'
-
-// Mock data for pov badges - would be fetched from Nostr in real implementation
-const mockBadges = [
-  {
-    id: '1',
-    name: 'Event Attendee',
-    description: 'Attended our awesome event',
-    image: '/colorful-event-badges.png'
-  },
-  {
-    id: '2',
-    name: 'VIP Access',
-    description: 'VIP access to all areas',
-    image: '/colorful-vip-badge.png'
-  },
-  {
-    id: '3',
-    name: 'Workshop Participant',
-    description: 'Participated in our workshop',
-    image: '/colorful-badge-workshop.png'
-  },
-  {
-    id: '4',
-    name: 'Speaker',
-    description: 'Spoke at our conference',
-    image: '/colorful-badge-speaker.png'
-  },
-  {
-    id: '5',
-    name: 'Hackathon Winner',
-    description: 'Won our hackathon challenge',
-    image: '/colorful-winner-badge.png'
-  },
-  {
-    id: '6',
-    name: 'Community Member',
-    description: 'Active community participant',
-    image: '/colorful-badge-community.png'
-  }
-]
+import { useNostrUser } from '@/contexts/nostr-user-context'
 
 export default function SuccessPage() {
-  const searchParams = useSearchParams()
-  const eventId = searchParams.get('eventId')
-  const badgeId = searchParams.get('badgeId')
-  const [currentBadge, setCurrentBadge] = useState<any>(null)
   const [error, setError] = useState<string | null>(null)
   const [animationComplete, setAnimationComplete] = useState(false)
   const confettiCanvasRef = useRef<HTMLCanvasElement>(null)
   const [showBadge, setShowBadge] = useState(false)
+  const { currentBadge } = useNostrUser()
 
   useEffect(() => {
-    if (!eventId || !badgeId) {
-      setError('Invalid success page access')
+    if (!currentBadge) {
       return
     }
 
-    const badge = mockBadges.find(b => b.id === badgeId)
-    if (badge) {
-      setCurrentBadge(badge)
+    // Trigger animations with slight delays
+    setTimeout(() => {
+      setShowBadge(true)
+      launchConfetti()
+    }, 500)
 
-      // Trigger animations with slight delays
-      setTimeout(() => {
-        setShowBadge(true)
-        launchConfetti()
-      }, 500)
-
-      setTimeout(() => {
-        setAnimationComplete(true)
-      }, 2000)
-    } else {
-      setError('POV badge not found')
-    }
-  }, [eventId, badgeId])
+    setTimeout(() => {
+      setAnimationComplete(true)
+    }, 2000)
+  }, [currentBadge])
 
   const launchConfetti = () => {
     if (typeof window !== 'undefined') {
@@ -125,7 +75,7 @@ export default function SuccessPage() {
     }
   }
 
-  const badgesPageUrl = `https://badges.page/?event=${eventId}`
+  const badgesPageUrl = `https://badges.page/a/${currentBadge?.naddr}`
 
   const handleShare = () => {
     if (navigator.share) {

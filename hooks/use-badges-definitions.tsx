@@ -10,24 +10,14 @@ interface UseBadgesDefinitionsProps {
   pubkey: string
 }
 
-interface UseBadgeDefinitionsReturn {
+interface UseBadgesDefinitionsReturn {
   badges: BadgeDefinition[]
   isLoading: boolean
 }
 
-const mockBadges = [
-  {
-    id: 'Nos-Vegas-13',
-    name: 'Nos Vegas 1/3',
-    description: 'Nos Vegas 1/3',
-    image: 'https://m.primal.net/PiYj.jpg',
-    pubkey: '115d4980bffffd015d048490a9813ad4f0de535aa3943821170277cfa5562ebe'
-  }
-]
-
-export const useBadgeDefinitions = ({
+export const useBadgesDefinitions = ({
   pubkey
-}: UseBadgesDefinitionsProps): UseBadgeDefinitionsReturn => {
+}: UseBadgesDefinitionsProps): UseBadgesDefinitionsReturn => {
   const [badges, setBadges] = useState<BadgeDefinition[]>([])
 
   const { events, isLoading, eose, createSubscription, removeSubscription } =
