@@ -7,11 +7,11 @@ import {
   useEffect,
   type ReactNode
 } from 'react'
-import { useRouter } from 'next/navigation'
 import { useNdk } from 'nostr-hooks'
 import { getPublicKey, nip19 } from 'nostr-tools'
 import { hexToBytes, bytesToHex } from '@noble/hashes/utils'
 import { BadgeDefinition } from '@/types/badge'
+import { NOSTR_RELAYS } from '@/constants/config'
 
 interface NostrAdminContextType {
   privateKey: string | null
@@ -31,7 +31,6 @@ const NostrAdminContext = createContext<NostrAdminContextType | undefined>(
 )
 
 export function NostrAdminProvider({ children }: { children: ReactNode }) {
-  const router = useRouter()
   const [privateKey, setPrivateKeyState] = useState<string | null>(null)
   const [publicKey, setPublicKey] = useState<string | null>(null)
   const [npubAddress, setNpubAddress] = useState<string | null>(null)
@@ -44,13 +43,7 @@ export function NostrAdminProvider({ children }: { children: ReactNode }) {
   // Initialize NDK with relays
   useEffect(() => {
     initNdk({
-      explicitRelayUrls: [
-        'wss://nos.lol/',
-        'wss://offchain.pub/',
-        'wss://relay.damus.io/',
-        'wss://relay.snort.social/',
-        'wss://relay.primal.net/'
-      ]
+      explicitRelayUrls: NOSTR_RELAYS
     })
   }, [initNdk])
 
