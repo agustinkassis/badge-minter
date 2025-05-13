@@ -2,6 +2,10 @@
 
 A web application for creating and distributing proof-of-visit (POV) badges on Nostr. Event organizers can easily generate QR codes that attendees can scan to claim unique badges as proof of their attendance.
 
+## Technical Documentation
+
+See the [Flow Documentation](docs/FLOW.md) for detailed technical implementation.
+
 ## Features
 
 - **Badge Creation & Management**: Create and manage digital badges for your events
