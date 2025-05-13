@@ -2,7 +2,6 @@ import { BadgeDefinition } from '@/types/badge'
 import { useSubscription } from 'nostr-hooks'
 import { AddressPointer, decode, NAddr } from 'nostr-tools/nip19'
 import { useEffect, useState } from 'react'
-
 export interface UseBadgeProps {
   naddr?: string
 }
@@ -12,11 +11,11 @@ export interface UseBadgeReturn {
   isLoading: boolean
 }
 
-export const useBadge = ({ naddr }: UseBadgeProps): UseBadgeReturn => {
+export const useBadge = ({ naddr }: UseBadgeProps = {}): UseBadgeReturn => {
   const [badge, setBadge] = useState<BadgeDefinition | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const { events, eose, createSubscription, removeSubscription } =
-    useSubscription('badges-definitions')
+    useSubscription('fetch-single-badge-definition')
 
   // Set loading state when naddr is provided
   useEffect(() => {
