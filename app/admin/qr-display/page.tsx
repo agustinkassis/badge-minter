@@ -223,7 +223,7 @@ export default function QRDisplayPage() {
     if (typeof window !== 'undefined') {
       setClaimUrl(
         currentBadge
-          ? `${window.location.origin}/claim?token=${currentNonce}&naddr=${currentBadge.naddr}`
+          ? `${window.location.origin}/claim?nonce=${currentNonce}&naddr=${currentBadge.naddr}`
           : ''
       )
     }

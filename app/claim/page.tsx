@@ -24,7 +24,7 @@ import { useNostrUser } from '@/contexts/nostr-user-context'
 export default function ClaimPage() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  const token = searchParams.get('token')
+  const nonce = searchParams.get('nonce')
   const naddr = searchParams.get('naddr') || undefined
   const [nostrAddress, setNostrAddress] = useState('')
   const [isLoading, setIsLoading] = useState(false)
@@ -39,15 +39,15 @@ export default function ClaimPage() {
   const { currentBadge, setCurrentBadge } = useNostrUser()
 
   useEffect(() => {
-    if (!token) {
+    if (!nonce) {
       setError('Invalid or expired QR code')
       return
     }
-  }, [token])
+  }, [nonce])
 
   useEffect(() => {
     if (!isBadgeLoading && !badge) {
-      setError('POV token not found')
+      setError('POV nonce not found')
     }
     if (badge) {
       setCurrentBadge(badge)
@@ -184,7 +184,7 @@ export default function ClaimPage() {
           <Card className="card-lavender border-none w-full max-w-md mx-auto">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl font-black tracking-tight text-white">
-                {miningStage === 'mining' && 'MINING POV TOKEN'}
+                {miningStage === 'mining' && 'MINING POV BADGE'}
                 {miningStage === 'verifying' && 'VERIFYING PROOF'}
                 {miningStage === 'complete' && 'PROOF VERIFIED!'}
               </CardTitle>
@@ -193,7 +193,7 @@ export default function ClaimPage() {
                 {miningStage === 'verifying' &&
                   'Verifying your proof on the Nostr network...'}
                 {miningStage === 'complete' &&
-                  'Your POV token has been successfully mined!'}
+                  'Your POV badge has been successfully mined!'}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
