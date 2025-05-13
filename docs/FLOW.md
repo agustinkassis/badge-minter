@@ -56,8 +56,17 @@ https://example.com/claim?nonce=abc123&naddr=naddr1q...xyz
 {
   "pubkey": "DISPOSABLE_USER_PUBKEY",
   "kind": 25666,
-  "tags": [["p", "BADGE_AUTHOR_PUBKEY"]],
-  "content": "NONCE"
+  "tags": [
+    ["p", "BADGE_AUTHOR_PUBKEY"],
+    ["nonce", "NONCE"]
+  ],
+  // JSON encoded
+  "content": {
+    "pubkey": "AWARDEE_PUBKEY",
+    "nip05": "alice@example.com",
+    "image": "https://avatar_image",
+    "displayName": "Display Name"
+  }
 }
 ```
 
@@ -90,7 +99,7 @@ If valid, publish award event:
   "kind": 8,
   "tags": [
     ["a", "30009:BADGE_AUTHOR_PUBKEY:BADGE_ID"],
-    ["p", "DISPOSABLE_USER_PUBKEY", "wss://relay"]
+    ["p", "AWARDEE_PUBKEY", "wss://relay"]
   ]
 }
 ```
@@ -129,5 +138,6 @@ If failed:
 | `BADGE_AUTHOR_PUBKEY`    | Public key of the badge issuer                                    |
 | `BADGE_ID`               | Badge definition identifier (aka `dtag`)                          |
 | `DISPOSABLE_USER_PUBKEY` | Temporary public key generated on frontend for claiming the badge |
+| `AWARDEE_PUBKEY`         | Badge award recipient's public key                                |
 
 ---
