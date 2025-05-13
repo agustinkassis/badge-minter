@@ -10,9 +10,10 @@ type NonceEntry = {
   expiresAt: number // timestamp
 }
 
-class NonceService {
+export class NonceService {
   private nonces: Map<string, NonceEntry> = new Map()
-  private readonly EXPIRY_TIME = 120 * 1000 // 120 seconds in milliseconds
+  private readonly EXPIRY_TIME =
+    parseInt(process.env.NONCE_EXPIRATION_SECONDS || '120') * 1000 // 120 seconds in milliseconds
   private cleanupInterval: NodeJS.Timeout | null = null
 
   constructor() {
@@ -117,8 +118,3 @@ class NonceService {
     }
   }
 }
-
-// Create a singleton instance
-const nonceService = new NonceService()
-
-export default nonceService
