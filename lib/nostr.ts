@@ -15,12 +15,7 @@ export async function fetchBadge(
 
   const filters = [{ authors: [pubkey], kinds: [kind], '#d': [identifier] }]
 
-  console.info('FETCHING BADGE')
-  console.dir(filters)
-
   const event = await ndk?.fetchEvent(filters)
-  console.info('EVENT')
-  console.dir(event)
 
   if (!event) return null
 

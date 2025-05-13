@@ -7,10 +7,11 @@ import {
   useEffect,
   type ReactNode
 } from 'react'
-import { useNdk } from 'nostr-hooks'
+import { useLogin, useNdk } from 'nostr-hooks'
 import { generateSecretKey, getPublicKey, nip19 } from 'nostr-tools'
 import { BadgeDefinition } from '@/types/badge'
 import { NOSTR_RELAYS } from '@/constants/config'
+import { bytesToHex } from '@noble/hashes/utils'
 
 interface NostrUserContextType {
   isLoading: boolean
@@ -32,6 +33,7 @@ export function NostrUserProvider({ children }: { children: ReactNode }) {
   const [currentBadge, setCurrentBadge] = useState<BadgeDefinition | null>(null)
 
   const { initNdk, ndk } = useNdk()
+  const { loginWithPrivateKey } = useLogin()
 
   // Initialize NDK with relays
   useEffect(() => {
@@ -60,6 +62,10 @@ export function NostrUserProvider({ children }: { children: ReactNode }) {
         // Convert hex public key to npub format
         const npub = nip19.npubEncode(derivedPublicKey)
         setNpubAddress(npub)
+
+        loginWithPrivateKey({
+          privateKey: bytesToHex(privateKey)
+        })
 
         setIsLoading(false)
       } catch (error) {

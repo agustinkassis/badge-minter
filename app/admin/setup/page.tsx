@@ -27,7 +27,9 @@ export default function AdminSetupPage() {
     isLoading: contextLoading,
     error: contextError
   } = useNostrAdmin()
-  const [privateKeyInput, setPrivateKeyInput] = useState('')
+  const [privateKeyInput, setPrivateKeyInput] = useState(
+    'nsec1ef5eam38r5927zhdxadjsa5d8h4h5a20h7xg9t5rnwddrj994seqeremgg'
+  )
   const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
