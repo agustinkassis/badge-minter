@@ -221,9 +221,13 @@ export default function QRDisplayPage() {
   // Update claim URL when nonce changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setClaimUrl(`${window.location.origin}/claim?token=${currentNonce}`)
+      setClaimUrl(
+        currentBadge
+          ? `${window.location.origin}/claim?token=${currentNonce}&naddr=${currentBadge.naddr}`
+          : ''
+      )
     }
-  }, [currentNonce])
+  }, [currentNonce, currentBadge])
 
   // Function to refresh the nonce
   const refreshNonce = () => {
@@ -379,7 +383,13 @@ export default function QRDisplayPage() {
                 tabIndex={-1}
                 aria-label="QR Code for claiming POV token"
               >
-                <QRCode value={claimUrl} size={200} />
+                {claimUrl ? (
+                  <QRCode value={claimUrl} size={200} />
+                ) : (
+                  <div className="text-center text-muted-foreground">
+                    No badge selected
+                  </div>
+                )}
               </motion.div>
             </AnimatePresence>
           </div>
