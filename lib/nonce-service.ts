@@ -4,20 +4,32 @@
  */
 
 // Type definition for a nonce entry
-type NonceEntry = {
+export type NonceEntry = {
   value: string
   createdAt: number // timestamp
   expiresAt: number // timestamp
 }
 
+export interface NonceServiceConstructor {
+  expirationTime?: number // in seconds
+  cleanupIntervalTime?: number // in seconds
+}
+
 export class NonceService {
   private nonces: Map<string, NonceEntry> = new Map()
-  private readonly EXPIRY_TIME =
-    parseInt(process.env.NONCE_EXPIRATION_SECONDS || '120') * 1000 // 120 seconds in milliseconds
+  private expirationTime: number
+  private cleanupIntervalTime: number
   private cleanupInterval: NodeJS.Timeout | null = null
 
-  constructor() {
+  constructor({
+    expirationTime,
+    cleanupIntervalTime = 30
+  }: NonceServiceConstructor = {}) {
     // Start the cleanup interval when the service is instantiated
+    this.expirationTime =
+      expirationTime || parseInt(process.env.NONCE_EXPIRATION_SECONDS || '120')
+    this.cleanupIntervalTime = cleanupIntervalTime
+
     this.startCleanupInterval()
   }
 
@@ -32,7 +44,7 @@ export class NonceService {
       Math.random().toString(36).substring(2, 15)
 
     const now = Date.now()
-    const expiresAt = now + this.EXPIRY_TIME
+    const expiresAt = now + this.expirationTime * 1000
 
     // Store the nonce with its expiration time
     this.nonces.set(nonceValue, {
@@ -105,7 +117,7 @@ export class NonceService {
     // Clean up expired nonces every 30 seconds
     this.cleanupInterval = setInterval(() => {
       this.cleanupExpiredNonces()
-    }, 30000)
+    }, this.cleanupIntervalTime * 1000)
   }
 
   /**
