@@ -58,6 +58,7 @@ https://example.com/claim?nonce=abc123&naddr=naddr1q...xyz
   "kind": 25666,
   "tags": [
     ["p", "BADGE_AUTHOR_PUBKEY"],
+    ["a", "30009:BADGE_AUTHOR_PUBKEY:BADGE_ID"],
     ["nonce", "NONCE"]
   ],
   // JSON encoded
@@ -111,9 +112,10 @@ Send confirmation via ephemeral event:
 ```jsonc
 {
   "pubkey": "BADGE_AUTHOR_PUBKEY",
-  "kind": 25666,
+  "kind": 25667,
   "tags": [
     ["p", "DISPOSABLE_USER_PUBKEY"],
+    ["a", "30009:BADGE_AUTHOR_PUBKEY:BADGE_ID"],
     ["e", "AWARD_EVENT_ID"]
   ],
   "content": "{\"success\": true, \"error\": null}"
