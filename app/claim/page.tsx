@@ -2,7 +2,7 @@
 
 import type React from 'react'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,11 +19,13 @@ import { User, Cpu, CheckCircle, AlertCircle } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { useNostrUser } from '@/contexts/nostr-user-context'
-import { useNdk, useProfile } from 'nostr-hooks'
 import { fetchBadge } from '@/lib/nostr'
 import { Footer } from '@/components/footer'
 import { motion } from 'framer-motion'
 import { nip19 } from 'nostr-tools'
+import { useUserClaim } from '@/hooks/use-user-claim'
+import { ClaimContent } from '@/types/claim'
+import { useProfile } from '@/hooks/use-profile'
 
 export default function ClaimPage() {
   const searchParams = useSearchParams()
@@ -39,9 +41,10 @@ export default function ClaimPage() {
     'resolving' | 'claiming' | 'complete'
   >('resolving')
   const [resolvedPubkey, setResolvedPubkey] = useState<string | null>(null)
-  const miningInterval = useRef<NodeJS.Timeout | null>(null)
-  const { ndk } = useNdk()
+  const { nostr } = useNostrUser()
   const { currentBadge, setCurrentBadge } = useNostrUser()
+  const { profile } = useProfile(resolvedPubkey || '')
+  const { claimBadge, claimResponse } = useUserClaim()
 
   useEffect(() => {
     if (!nonce) {
@@ -51,7 +54,7 @@ export default function ClaimPage() {
   }, [nonce])
 
   useEffect(() => {
-    if (!ndk) {
+    if (!nostr) {
       return
     }
     if (!naddr) {
@@ -61,66 +64,73 @@ export default function ClaimPage() {
     setIsLoading(true)
 
     try {
-      fetchBadge(naddr, ndk).then(badge => {
-        console.info('BADGE')
-        console.dir(badge)
-
+      fetchBadge(naddr, nostr).then(badge => {
         if (badge) {
           setCurrentBadge(badge)
         } else {
-          setError('Badge not found')
+          // setError('Badge not found')
         }
       })
-    } catch (error) {
-      setError('Error fetching badge')
+    } catch (error: unknown) {
+      setError((error as Error).message)
     } finally {
       setIsLoading(false)
     }
-  }, [naddr, ndk]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [naddr, nostr]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Cleanup interval on unmount
   useEffect(() => {
-    return () => {
-      if (miningInterval.current) {
-        clearInterval(miningInterval.current)
-      }
+    if (resolvedPubkey) {
+      setClaimingProgress(10)
     }
-  }, [])
+  }, [resolvedPubkey])
+
+  useEffect(() => {
+    if (profile === undefined) {
+      return
+    }
+    console.info('Profile found!')
+    console.dir(profile)
+
+    const claimContent: ClaimContent = {
+      pubkey: resolvedPubkey!,
+      nip05: profile?.nip05 || nostrAddress,
+      image: profile?.picture || 'http://noimage',
+      displayName: profile?.displayName || 'Unknown'
+    }
+
+    setClaimingStage('claiming')
+    setClaimingProgress(60)
+    claimBadge(claimContent, nonce!)
+      .then(() => {
+        setClaimingProgress(80)
+        setTimeout(() => {
+          router.replace(`/claim/success`)
+        }, 1000)
+      })
+      .catch(error => {
+        console.dir(error)
+        setError('Error claiming badge')
+      })
+  }, [profile, nostrAddress, nonce, resolvedPubkey]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!claimResponse) {
+      return
+    }
+
+    if (claimResponse.success) {
+      setClaimingStage('complete')
+      setClaimingProgress(100)
+    } else {
+      setError(claimResponse.message)
+      setClaimingProgress(0)
+    }
+  }, [claimResponse])
 
   const startClaimingProcess = () => {
     setShowClaimingAnimation(true)
-    setClaimingProgress(0)
+    setClaimingProgress(15)
     setClaimingStage('resolving')
-
-    // Simulate mining progress
-    miningInterval.current = setInterval(() => {
-      setClaimingProgress(prev => {
-        const newProgress = prev + Math.random() * 5
-
-        // First stage - mining (0-60%)
-        if (newProgress >= 60 && prev < 60) {
-          setClaimingStage('claiming')
-        }
-
-        // Second stage - verifying (60-100%)
-        if (newProgress >= 100) {
-          if (miningInterval.current) {
-            clearInterval(miningInterval.current)
-          }
-
-          setClaimingStage('complete')
-
-          // Wait a moment to show completion before redirecting
-          setTimeout(() => {
-            router.replace(`/claim/success`)
-          }, 1000)
-
-          return 100
-        }
-
-        return newProgress
-      })
-    }, 100)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {

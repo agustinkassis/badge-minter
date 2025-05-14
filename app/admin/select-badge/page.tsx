@@ -14,10 +14,10 @@ import { ArrowLeft, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { useProfile } from 'nostr-hooks'
 import { motion } from 'framer-motion'
 import { useBadgesDefinitions } from '@/hooks/use-badges-definitions'
 import { BadgeDefinition } from '@/components/badge-definition'
+import { useProfile } from '@/hooks/use-profile'
 
 // Animation variants
 const containerVariants = {
@@ -59,7 +59,7 @@ export default function SelectPOVPage() {
     pubkey: publicKey || ''
   })
 
-  const { profile } = useProfile({ pubkey: publicKey || '' })
+  const { profile } = useProfile(publicKey || '')
 
   useEffect(() => {
     // Check if user is authenticated
