@@ -126,7 +126,7 @@ export default function ClaimPage() {
       setError(claimResponse.message)
       setClaimingProgress(0)
     }
-  }, [claimResponse])
+  }, [claimResponse]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const startClaimingProcess = () => {
     setShowClaimingAnimation(true)
