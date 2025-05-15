@@ -3,5 +3,6 @@ export const NOSTR_RELAYS = [
   'wss://offchain.pub/',
   'wss://relay.damus.io/',
   'wss://relay.snort.social/',
-  'wss://relay.primal.net/'
+  'wss://relay.primal.net/',
+  'wss://relay.masize.com'
 ]
