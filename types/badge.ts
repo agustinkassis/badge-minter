@@ -13,7 +13,7 @@ export interface BadgeDefinition {
 export interface BadgeAward {
   id: string
   pubkey: string
-  event: NostrEvent
   badge: BadgeDefinition
-  claim?: ClaimContent
+  event: NostrEvent // Kind 8 event published by admin
+  claim?: ClaimContent // Claim content
 }

@@ -104,9 +104,6 @@ export default function ClaimPage() {
     claimBadge(claimContent, nonce!)
       .then(() => {
         setClaimingProgress(80)
-        setTimeout(() => {
-          router.replace(`/claim/success`)
-        }, 1000)
       })
       .catch(error => {
         console.dir(error)
@@ -122,6 +119,9 @@ export default function ClaimPage() {
     if (claimResponse.success) {
       setClaimingStage('complete')
       setClaimingProgress(100)
+      setTimeout(() => {
+        router.replace(`/claim/success`)
+      }, 600)
     } else {
       setError(claimResponse.message)
       setClaimingProgress(0)

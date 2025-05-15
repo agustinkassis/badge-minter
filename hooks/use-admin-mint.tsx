@@ -27,17 +27,15 @@ export const useAdminMint = ({
   const { currentBadge } = useNostrAdmin()
   const { awards, award } = useBadges({ badge: currentBadge })
   const { signer } = useNostrAdmin()
-  const now = useMemo(() => Date.now() / 1000, [])
+  const now = useMemo(() => Math.floor(Date.now() / 1000), [])
   const { nostr } = useNostr()
 
   const respondClaim = useCallback(
-    async (award: BadgeAward) => {
-      console.info('Response claim received', award)
-
-      const claimEvent = award.event
+    async (claimEvent: NostrEvent) => {
+      console.info('Response claim received', claimEvent)
 
       const event = {
-        content: JSON.stringify(award),
+        content: JSON.stringify({ success: true, error: null }),
         kind: ClaimResponseKind,
         tags: [
           ['p', claimEvent.pubkey],
@@ -66,7 +64,7 @@ export const useAdminMint = ({
         JSON.parse(event.content)
       )
 
-      respondClaim(badgeAward)
+      respondClaim(event)
       onNewAward?.(badgeAward)
     },
     [currentBadge, award, onNewAward, respondClaim]
@@ -75,7 +73,6 @@ export const useAdminMint = ({
   // Starts claimRequests subscription
   useClaimRequests({
     since: now,
-    until: Infinity,
     badge: currentBadge || undefined,
     onClaimRequest
   })

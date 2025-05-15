@@ -24,6 +24,7 @@ export function useSubscription({
 
   useEffect(() => {
     if (!nostr || !filter || !enabled) return
+
     setEvents([])
     setIsLoading(true)
 

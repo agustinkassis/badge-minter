@@ -13,7 +13,7 @@ export interface UseClaimRequestsProps {
 
 export function useClaimRequests({
   since = 0,
-  until = Infinity,
+  until,
   badge,
   onClaimRequest
 }: UseClaimRequestsProps) {
