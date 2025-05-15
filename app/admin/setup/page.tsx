@@ -20,6 +20,8 @@ import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Footer } from '@/components/footer'
 
+const NEXT_PUBLIC_MOCK_NSEC = process.env.NEXT_PUBLIC_MOCK_NSEC || ''
+
 export default function AdminSetupPage() {
   const router = useRouter()
   const {
@@ -27,9 +29,7 @@ export default function AdminSetupPage() {
     isLoading: contextLoading,
     error: contextError
   } = useNostrAdmin()
-  const [privateKeyInput, setPrivateKeyInput] = useState(
-    'nsec1ef5eam38r5927zhdxadjsa5d8h4h5a20h7xg9t5rnwddrj994seqeremgg'
-  )
+  const [privateKeyInput, setPrivateKeyInput] = useState(NEXT_PUBLIC_MOCK_NSEC)
   const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
