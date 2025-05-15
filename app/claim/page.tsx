@@ -26,6 +26,7 @@ import { nip19 } from 'nostr-tools'
 import { useUserClaim } from '@/hooks/use-user-claim'
 import { ClaimContent } from '@/types/claim'
 import { useProfile } from '@/hooks/use-profile'
+import { isNip05 } from 'nostr-tools/nip05'
 
 export default function ClaimPage() {
   const searchParams = useSearchParams()
@@ -141,10 +142,8 @@ export default function ClaimPage() {
     // Validate Nostr address (accept npub, nprofile, or email-like format)
     const isValidNostrFormat =
       nostrAddress.startsWith('npub') || nostrAddress.startsWith('nprofile')
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    const isValidEmailFormat = emailRegex.test(nostrAddress)
 
-    if (!isValidNostrFormat && !isValidEmailFormat) {
+    if (!isValidNostrFormat && !isNip05(nostrAddress)) {
       setError(
         'Please enter a valid Nostr address (npub, nprofile, or name@domain.com)'
       )
@@ -153,7 +152,7 @@ export default function ClaimPage() {
     }
 
     // Handle NIP-05 resolution
-    if (isValidEmailFormat) {
+    if (isNip05(nostrAddress)) {
       try {
         const [name, domain] = nostrAddress.split('@')
         const nip05Url = `https://${domain}/.well-known/nostr.json?name=${name}`

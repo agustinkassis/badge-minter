@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,8 +17,7 @@ import {
   CheckCircle,
   User,
   Users,
-  Plus,
-  RefreshCw
+  Plus
 } from 'lucide-react'
 import Link from 'next/link'
 import QRCode from 'react-qr-code'
@@ -27,148 +26,40 @@ import { useToast } from '@/hooks/use-toast'
 import { Toaster } from '@/components/ui/toaster'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAdminMint } from '@/hooks/use-admin-mint'
+import { BadgeAward } from '@/types/badge'
+
+const mockBadge = {
+  id: 'mock',
+  name: 'Mock Badge',
+  description: 'A mock badge for testing',
+  image: '/placeholder.svg',
+  pubkey: 'npub1abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456',
+  naddr: 'naddr1mock'
+}
 
 // Mock user profiles for simulation
-const mockUsers = [
+const mockUsers: BadgeAward[] = [
   {
     id: '1',
-    displayName: 'Sarah Johnson',
-    username: 'sarahjohnson',
-    picture: '/colorful-profile-avatar.png',
-    npub: 'npub1abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '2',
-    displayName: 'Alex Rivera',
-    username: 'alexrivera',
-    picture: '/placeholder.svg?key=j3y8t',
-    npub: 'npub2abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '3',
-    displayName: 'Jamie Smith',
-    username: 'jamiesmith',
-    picture: '/profile-avatar-hat.png',
-    npub: 'npub3abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '4',
-    displayName: 'Taylor Wong',
-    username: 'taylorwong',
-    picture: '/placeholder.svg?key=p39sj',
-    npub: 'npub4abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '5',
-    displayName: 'Jordan Lee',
-    username: 'jordanlee',
-    picture: '/profile-avatar-sunglasses.png',
-    npub: 'npub5abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '6',
-    displayName: 'Casey Kim',
-    username: 'caseykim',
-    picture: '/profile-avatar-beanie.png',
-    npub: 'npub6abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '7',
-    displayName: 'Morgan Chen',
-    username: 'morganchen',
-    picture: '/profile-avatar-curly.png',
-    npub: 'npub7abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '8',
-    displayName: 'Riley Patel',
-    username: 'rileypatel',
-    picture: '/profile-avatar-cap.png',
-    npub: 'npub8abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '9',
-    displayName: 'Quinn Davis',
-    username: 'quinndavis',
-    picture: '/placeholder.svg?key=q7d9f',
-    npub: 'npub9abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '10',
-    displayName: 'Avery Martinez',
-    username: 'averymartinez',
-    picture: '/placeholder.svg?key=a5m2z',
-    npub: 'npub10abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '11',
-    displayName: 'Blake Thompson',
-    username: 'blakethompson',
-    picture: '/placeholder.svg?key=b8t3p',
-    npub: 'npub11abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '12',
-    displayName: 'Cameron Wright',
-    username: 'cameronwright',
-    picture: '/placeholder.svg?key=c4w7t',
-    npub: 'npub12abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '13',
-    displayName: 'Dakota Green',
-    username: 'dakotagreen',
-    picture: '/placeholder.svg?key=d2g6n',
-    npub: 'npub13abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '14',
-    displayName: 'Emerson Brown',
-    username: 'emersonbrown',
-    picture: '/placeholder.svg?key=e9b1n',
-    npub: 'npub14abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '15',
-    displayName: 'Finley Adams',
-    username: 'finleyadams',
-    picture: '/placeholder.svg?key=f3a8s',
-    npub: 'npub15abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '16',
-    displayName: 'Gray Wilson',
-    username: 'graywilson',
-    picture: '/placeholder.svg?key=g5w2n',
-    npub: 'npub16abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '17',
-    displayName: 'Harper Evans',
-    username: 'harperevans',
-    picture: '/placeholder.svg?key=h7e4s',
-    npub: 'npub17abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '18',
-    displayName: 'Indigo Clark',
-    username: 'indigoclark',
-    picture: '/placeholder.svg?key=i1c9k',
-    npub: 'npub18abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '19',
-    displayName: 'Jordan Baker',
-    username: 'jordanbaker',
-    picture: '/placeholder.svg?key=j6b3r',
-    npub: 'npub19abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
-  },
-  {
-    id: '20',
-    displayName: 'Kai Nelson',
-    username: 'kainelson',
-    picture: '/placeholder.svg?key=k2n7n',
-    npub: 'npub20abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456'
+    claim: {
+      displayName: 'Sarah Johnson',
+      image: '/colorful-profile-avatar.png',
+      pubkey:
+        'npub1abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456',
+      nip05: 'sarahjohnson@example.com'
+    },
+    pubkey: 'npub1abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456',
+    event: {
+      id: '1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456',
+      pubkey:
+        'npub1abcdef1234567890abcdef1234567890abcdef1234567890abcdef123456',
+      created_at: 1715808000,
+      kind: 1,
+      content: 'Hello, world!',
+      tags: [],
+      sig: ''
+    },
+    badge: mockBadge
   }
 ]
 
@@ -177,14 +68,41 @@ export default function QRDisplayPage() {
   const [currentNonce, setCurrentNonce] = useState('')
   const [copySuccess, setCopySuccess] = useState(false)
   const [claimUrl, setClaimUrl] = useState('')
-  const [claimers, setClaimers] = useState<any[]>([])
+  const [claimers, setClaimers] = useState<BadgeAward[]>([])
   const { toast } = useToast()
   const MAX_VISIBLE_CLAIMERS = 16
   const nonceRefreshInterval = useRef<NodeJS.Timeout | null>(null)
   const NONCE_REFRESH_INTERVAL = 2000 // 2 seconds
 
   const { isAuthenticated, currentBadge } = useNostrAdmin()
-  const { generateNonce } = useAdminMint()
+
+  const onNewAward = useCallback(
+    async (award: BadgeAward) => {
+      console.info('New award:', award)
+      setClaimers(prev => [...prev, award])
+
+      toast({
+        variant: 'primary',
+        description: (
+          <div className="flex items-center gap-2">
+            <img
+              src={award.claim?.image || '/placeholder.svg'}
+              alt={award.claim?.displayName || 'User'}
+              className="h-8 w-8 rounded-full"
+            />
+            <div>
+              <p className="font-bold">{award.claim?.displayName}</p>
+              <p className="text-xs opacity-80">@{award.claim?.displayName}</p>
+            </div>
+          </div>
+        )
+      })
+    },
+    // eslint-disable-line react-hooks/exhaustive-deps
+    [toast]
+  )
+
+  const { generateNonce } = useAdminMint({ onNewAward })
 
   // Find the selected POV badge
   useEffect(() => {
@@ -272,13 +190,15 @@ export default function QRDisplayPage() {
       description: (
         <div className="flex items-center gap-2">
           <img
-            src={randomUser.picture || '/placeholder.svg'}
-            alt={randomUser.displayName}
+            src={randomUser.claim?.image || '/placeholder.svg'}
+            alt={randomUser.claim?.displayName}
             className="h-8 w-8 rounded-full"
           />
           <div>
-            <p className="font-bold">{randomUser.displayName}</p>
-            <p className="text-xs opacity-80">@{randomUser.username}</p>
+            <p className="font-bold">{randomUser.claim?.displayName}</p>
+            <p className="text-xs opacity-80">
+              @{randomUser.claim?.displayName}
+            </p>
           </div>
         </div>
       )
@@ -426,7 +346,7 @@ export default function QRDisplayPage() {
 
                       return (
                         <motion.div
-                          key={`${claimer.id}-${claimer.timestamp}`}
+                          key={`${claimer.id}`}
                           initial={{ scale: 0, opacity: 0 }}
                           animate={{ scale: 1, opacity: 1 }}
                           transition={{
@@ -438,10 +358,10 @@ export default function QRDisplayPage() {
                           className="relative flex items-center justify-center"
                         >
                           <img
-                            src={claimer.picture || '/placeholder.svg'}
-                            alt={claimer.displayName || 'User'}
+                            src={claimer.claim?.image || '/placeholder.svg'}
+                            alt={claimer.claim?.displayName || 'User'}
                             className="h-8 w-8 rounded-full object-cover border-2 border-white"
-                            title={claimer.displayName}
+                            title={claimer.claim?.displayName}
                           />
                           {isNewClaimer && (
                             <motion.div
