@@ -4,3 +4,6 @@ export interface ClaimContent {
   image: string
   displayName: string
 }
+
+export const ClaimRequestKind = 25666
+export const ClaimResponseKind = 25667
