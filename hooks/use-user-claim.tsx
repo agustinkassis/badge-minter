@@ -34,6 +34,7 @@ export const useUserClaim = (): UserClaimReturn => {
       kind: 25666,
       tags: [
         ['p', currentBadge.pubkey],
+        ['a', `30009:${currentBadge.pubkey}:${currentBadge.id}`],
         ['nonce', nonce]
       ],
       content: JSON.stringify(claimContent),
