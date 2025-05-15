@@ -1,15 +1,20 @@
 import { BadgeDefinition } from '@/types/badge'
+import { NostrEvent, NPool } from '@nostrify/nostrify'
+import { isValid } from 'nostr-tools/nip05'
 import { AddressPointer, decode } from 'nostr-tools/nip19'
 
 // Helper to extract tag value from event.tags
-function getTagValue(event: any, tagName: string): string | undefined {
+export function getTagValue(
+  event: NostrEvent,
+  tagName: string
+): string | undefined {
   const tag = event.tags?.find((t: string[]) => t[0] === tagName)
   return tag ? tag[1] : undefined
 }
 
 export async function fetchBadge(
   naddr: string,
-  nostr: any // NPool from @nostrify/nostrify
+  nostr: NPool // NPool from @nostrify/nostrify
 ): Promise<BadgeDefinition | null> {
   const {
     data: { identifier, kind, pubkey }
@@ -23,8 +28,13 @@ export async function fetchBadge(
   console.info('Fetching badge...')
   console.dir(filters)
 
-  const events = await nostr.query(filters)
-  const event = events && events.length > 0 ? events[0] : null
+  let event = null
+  for await (const msg of nostr.req(filters)) {
+    if (msg[0] === 'EVENT') {
+      event = msg[2]
+      break
+    }
+  }
 
   console.info('Badge fetched!')
   console.dir(event)
@@ -39,4 +49,8 @@ export async function fetchBadge(
     pubkey: event.pubkey,
     naddr: naddr
   }
+}
+
+export function isValidPubkey(pubkey: string): boolean {
+  return /^[a-zA-Z0-9]{66}$/.test(pubkey)
 }
