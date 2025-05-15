@@ -33,7 +33,7 @@ export default function ClaimPage() {
   const router = useRouter()
   const nonce = searchParams.get('nonce')
   const naddr = searchParams.get('naddr') || undefined
-  const [nostrAddress, setNostrAddress] = useState('')
+  const [nostrAddress, setNostrAddress] = useState('agustin@primal.net')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [miningProgress, setClaimingProgress] = useState(0)
