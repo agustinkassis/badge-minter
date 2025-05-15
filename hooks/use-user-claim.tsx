@@ -1,7 +1,8 @@
 import { useNostrUser } from '@/contexts/nostr-user-context'
 import { BadgeDefinition } from '@/types/badge'
-import { ClaimContent } from '@/types/claim'
+import { ClaimContent, ClaimRequestKind } from '@/types/claim'
 import { useState } from 'react'
+import { BadgeDefinition as NostrBadgeDefinitionKind } from 'nostr-tools/kinds'
 
 export type UserClaimReturn = {
   currentBadge: BadgeDefinition | null
@@ -31,10 +32,13 @@ export const useUserClaim = (): UserClaimReturn => {
     setIsLoading(true)
 
     const event = {
-      kind: 25666,
+      kind: ClaimRequestKind,
       tags: [
         ['p', currentBadge.pubkey],
-        ['a', `30009:${currentBadge.pubkey}:${currentBadge.id}`],
+        [
+          'a',
+          `${NostrBadgeDefinitionKind}:${currentBadge.pubkey}:${currentBadge.id}`
+        ],
         ['nonce', nonce]
       ],
       content: JSON.stringify(claimContent),
