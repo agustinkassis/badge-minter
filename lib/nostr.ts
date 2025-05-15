@@ -1,6 +1,5 @@
 import { BadgeDefinition } from '@/types/badge'
 import { NostrEvent, NPool } from '@nostrify/nostrify'
-import { isValid } from 'nostr-tools/nip05'
 import { AddressPointer, decode } from 'nostr-tools/nip19'
 
 // Helper to extract tag value from event.tags
@@ -25,9 +24,6 @@ export async function fetchBadge(
 
   const filters = [{ authors: [pubkey], kinds: [kind], '#d': [identifier] }]
 
-  console.info('Fetching badge...')
-  console.dir(filters)
-
   let event = null
   for await (const msg of nostr.req(filters)) {
     if (msg[0] === 'EVENT') {
@@ -35,9 +31,6 @@ export async function fetchBadge(
       break
     }
   }
-
-  console.info('Badge fetched!')
-  console.dir(event)
 
   if (!event) return null
 
