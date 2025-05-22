@@ -80,12 +80,6 @@ export default function ClaimPage() {
   }, [naddr, nostr]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (resolvedPubkey) {
-      setClaimingProgress(10)
-    }
-  }, [resolvedPubkey])
-
-  useEffect(() => {
     if (profile === undefined) {
       return
     }
@@ -130,7 +124,7 @@ export default function ClaimPage() {
 
   const startClaimingProcess = () => {
     setShowClaimingAnimation(true)
-    setClaimingProgress(15)
+    setClaimingProgress(0)
     setClaimingStage('resolving')
   }
 
@@ -154,10 +148,14 @@ export default function ClaimPage() {
     // Handle NIP-05 resolution
     if (isNip05(nostrAddress)) {
       try {
+        setClaimingProgress(10)
         const [name, domain] = nostrAddress.split('@')
         const nip05Url = `https://${domain}/.well-known/nostr.json?name=${name}`
 
         const response = await fetch(nip05Url)
+
+        setClaimingProgress(20)
+        console.info('HERE')
         if (!response.ok) {
           throw new Error('Failed to resolve NIP-05 address')
         }
@@ -165,16 +163,14 @@ export default function ClaimPage() {
         const data = await response.json()
         const pubkey = data.names[name]
 
+        console.info('pubkey', pubkey)
+
         if (!pubkey) {
           throw new Error('NIP-05 address not found')
         }
 
         // Set the resolved pubkey to fetch profile
         setResolvedPubkey(pubkey)
-
-        // Convert hex pubkey to npub format
-        const npub = nip19.npubEncode(pubkey)
-        setNostrAddress(npub)
       } catch (error) {
         setError(
           'Failed to resolve NIP-05 address. Please try using your npub directly.'
