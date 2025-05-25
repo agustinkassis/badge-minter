@@ -116,7 +116,7 @@ export default function AdminSetupPage() {
                   className="pl-10 pr-10 border-primary"
                   required
                 />
-                <Button
+                {/* <Button
                   type="button"
                   variant="ghost"
                   size="icon"
@@ -131,7 +131,7 @@ export default function AdminSetupPage() {
                   <span className="sr-only">
                     {showPrivateKey ? 'Hide' : 'Show'} private key
                   </span>
-                </Button>
+                </Button> */}
               </div>
               <p className="text-xs text-muted-foreground">
                 Your private key is used to sign POV badges. It never leaves
