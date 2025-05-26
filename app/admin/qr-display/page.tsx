@@ -234,7 +234,7 @@ export default function QRDisplayPage() {
   }
 
   return (
-    <div className="container relative flex min-h-screen flex-col px-4 py-10">
+    <div className="container relative flex min-h-screen flex-col px-4 py-6">
       {/* Toast notifications */}
       <Toaster />
 
@@ -245,15 +245,7 @@ export default function QRDisplayPage() {
       ></div>
       <div className="lightning lightning-1 animate-pulse"></div>
 
-      <Link
-        href="/admin/select-badge"
-        className="mb-6 flex items-center text-sm font-bold text-foreground hover:text-primary"
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        BACK TO POV SELECTION
-      </Link>
-
-      <Card className="card-mint border-none mx-auto w-full max-w-md">
+      <Card className="card-mint border-none mx-auto w-full">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-black tracking-tight text-primary">
             SCAN TO MINT
@@ -272,11 +264,11 @@ export default function QRDisplayPage() {
             tabIndex={0}
             className="rounded-lg bg-white/50 p-4 hover:bg-white/80 cursor-pointer"
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 flex-col">
               <img
                 src={currentBadge.image || '/placeholder.svg'}
                 alt={currentBadge.name}
-                className="h-12 w-12 rounded-full object-cover"
+                className="h-52 w-52 rounded-full object-cover"
               />
               <div className="text-left">
                 <h3 className="font-bold uppercase">{currentBadge.name}</h3>
@@ -288,7 +280,7 @@ export default function QRDisplayPage() {
           </div>
 
           {/* QR Code with Nonce Refresh */}
-          <div className="mx-auto flex h-64 w-64 flex-col items-center justify-center relative">
+          <div className="mx-auto flex flex-col items-center justify-center relative">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentNonce}
@@ -296,14 +288,30 @@ export default function QRDisplayPage() {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.9 }}
                 transition={{ duration: 0.2 }}
-                className="bg-white p-4 rounded-lg border-2 border-primary cursor-default relative"
+                className="bg-white p-4 rounded-lg border-2 border-primary cursor-default relative flex items-center justify-center"
                 onClick={e => e.preventDefault()}
                 onKeyDown={e => e.preventDefault()}
                 tabIndex={-1}
                 aria-label="QR Code for claiming POV badge"
               >
                 {claimUrl ? (
-                  <QRCode value={claimUrl} size={200} />
+                  <>
+                    <QRCode
+                      value={claimUrl}
+                      size={200}
+                      className="block md:hidden"
+                    />
+                    <QRCode
+                      value={claimUrl}
+                      size={500}
+                      className="hidden md:block lg:hidden"
+                    />
+                    <QRCode
+                      value={claimUrl}
+                      size={500}
+                      className="hidden lg:block"
+                    />
+                  </>
                 ) : (
                   <div className="text-center text-muted-foreground">
                     No badge selected
@@ -360,7 +368,7 @@ export default function QRDisplayPage() {
                           <img
                             src={claimer.claim?.image || '/placeholder.svg'}
                             alt={claimer.claim?.displayName || 'User'}
-                            className="h-8 w-8 rounded-full object-cover border-2 border-white"
+                            className="h-8 w-8 md:h-20 md:w-20 rounded-full object-cover border-2 border-white"
                             title={claimer.claim?.displayName}
                           />
                           {isNewClaimer && (
@@ -408,7 +416,7 @@ export default function QRDisplayPage() {
           </div>
 
           {/* Test buttons */}
-          <div className="flex gap-2 justify-center">
+          {/* <div className="flex gap-2 justify-center">
             <Button
               variant="outline"
               size="sm"
@@ -436,7 +444,7 @@ export default function QRDisplayPage() {
               <User className="h-4 w-4 mr-2" />
               Simulate Claim
             </Button>
-          </div>
+          </div> */}
         </CardContent>
         <CardFooter className="text-center text-xs text-muted-foreground">
           Display this QR code at your event for attendees to scan
