@@ -14,11 +14,12 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Eye, EyeOff, ArrowLeft, Key, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Key, AlertCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Footer } from '@/components/footer'
+import useLocalStorage from '@/hooks/use-local-storage'
 
 const NEXT_PUBLIC_MOCK_NSEC = process.env.NEXT_PUBLIC_MOCK_NSEC || ''
 
@@ -29,8 +30,10 @@ export default function AdminSetupPage() {
     isLoading: contextLoading,
     error: contextError
   } = useNostrAdmin()
-  const [privateKeyInput, setPrivateKeyInput] = useState(NEXT_PUBLIC_MOCK_NSEC)
-  const [showPrivateKey, setShowPrivateKey] = useState(false)
+  const [privateKeyInput, setPrivateKeyInput] = useLocalStorage<string | null>(
+    'privateKey',
+    NEXT_PUBLIC_MOCK_NSEC
+  )
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -41,7 +44,7 @@ export default function AdminSetupPage() {
 
     try {
       // Basic validation
-      if (!privateKeyInput.trim()) {
+      if (!privateKeyInput?.trim()) {
         throw new Error('Private key is required')
       }
 
@@ -103,35 +106,32 @@ export default function AdminSetupPage() {
               <Label htmlFor="privateKey" className="font-bold">
                 YOUR NOSTR PRIVATE KEY
               </Label>
-              <div className="relative">
-                <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                  <Key className="h-5 w-5 text-primary" />
-                </div>
-                <Input
-                  id="privateKey"
-                  type={showPrivateKey ? 'text' : 'password'}
-                  placeholder="nsec..."
-                  value={privateKeyInput}
-                  onChange={e => setPrivateKeyInput(e.target.value)}
-                  className="pl-10 pr-10 border-primary"
-                  required
-                />
-                {/* <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="absolute right-0 top-0 h-full px-3 py-2 text-primary hover:text-primary/80"
-                  onClick={() => setShowPrivateKey(!showPrivateKey)}
-                >
-                  {showPrivateKey ? (
-                    <EyeOff className="h-4 w-4" />
-                  ) : (
-                    <Eye className="h-4 w-4" />
-                  )}
-                  <span className="sr-only">
-                    {showPrivateKey ? 'Hide' : 'Show'} private key
-                  </span>
-                </Button> */}
+              <div className="relative flex flex-col">
+                {privateKeyInput !== null ? (
+                  <Button
+                    type="button"
+                    variant={'destructive'}
+                    className="w-full"
+                    onClick={e => setPrivateKeyInput(null)}
+                  >
+                    Remove Stored Private Key
+                  </Button>
+                ) : (
+                  <>
+                    <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                      <Key className="h-5 w-5 text-primary" />
+                    </div>
+                    <Input
+                      id="privateKey"
+                      type={'password'}
+                      placeholder="nsec..."
+                      value={privateKeyInput || ''}
+                      onChange={e => setPrivateKeyInput(e.target.value)}
+                      className="pl-10 pr-10 border-primary"
+                      required
+                    />
+                  </>
+                )}
               </div>
               <p className="text-xs text-muted-foreground">
                 Your private key is used to sign POV badges. It never leaves
