@@ -25,7 +25,7 @@ export function Toaster() {
           <ToastClose />
         </Toast>
       ))}
-      <ToastViewport />
+      <ToastViewport className="fixed bottom-4 left-4 z-[100]" />
     </ToastProvider>
   )
 }
