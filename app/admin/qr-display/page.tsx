@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -10,16 +9,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import {
-  ArrowLeft,
-  ExternalLink,
-  Copy,
-  CheckCircle,
-  User,
-  Users,
-  Plus
-} from 'lucide-react'
-import Link from 'next/link'
+import { CheckCircle, Users, Plus } from 'lucide-react'
 import QRCode from 'react-qr-code'
 import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { useToast } from '@/hooks/use-toast'
@@ -70,7 +60,7 @@ export default function QRDisplayPage() {
   const [claimUrl, setClaimUrl] = useState('')
   const [claimers, setClaimers] = useState<BadgeAward[]>([])
   const { toast } = useToast()
-  const MAX_VISIBLE_CLAIMERS = 16
+  const MAX_VISIBLE_CLAIMERS = 12
   const nonceRefreshInterval = useRef<NodeJS.Timeout | null>(null)
   const NONCE_REFRESH_INTERVAL = 2000 // 2 seconds
 
@@ -234,7 +224,7 @@ export default function QRDisplayPage() {
   }
 
   return (
-    <div className="container relative flex min-h-screen flex-col px-4 py-6">
+    <div className="container relative flex min-h-screen flex-col px-4">
       {/* Toast notifications */}
       <Toaster />
 
@@ -248,77 +238,81 @@ export default function QRDisplayPage() {
       <Card className="card-mint border-none mx-auto w-full">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-black tracking-tight text-primary">
-            SCAN TO MINT
+            CLAIM YOUR BADGE
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 text-center">
-          {/* POV Display - At the top */}
-          <div
-            onClick={() =>
-              window.open(
-                `https://badges.page/a/${currentBadge.naddr}`,
-                '_blank'
-              )
-            }
-            role="link"
-            tabIndex={0}
-            className="rounded-lg bg-white/50 p-4 hover:bg-white/80 cursor-pointer"
-          >
-            <div className="flex items-center gap-3 flex-col">
-              <img
-                src={currentBadge.image || '/placeholder.svg'}
-                alt={currentBadge.name}
-                className="h-52 w-52 rounded-full object-cover"
-              />
-              <div className="text-left">
-                <h3 className="font-bold uppercase">{currentBadge.name}</h3>
-                <p className="text-xs text-muted-foreground">
-                  {currentBadge.description}
-                </p>
+          <div className="flex flex-col md:flex-row gap-6">
+            {/* POV Display left */}
+            <div
+              onClick={() =>
+                window.open(
+                  `https://badges.page/a/${currentBadge.naddr}`,
+                  '_blank'
+                )
+              }
+              role="link"
+              tabIndex={0}
+              className="rounded-lg bg-white/50 p-4 hover:bg-white/80 cursor-pointer w-[50%]"
+            >
+              <div className="flex items-center flex-col">
+                <h3 className="font-bold uppercase text-3xl">
+                  {currentBadge.name}
+                </h3>
+                <img
+                  src={currentBadge.image || '/placeholder.svg'}
+                  alt={currentBadge.name}
+                  className="h-auto w-[65%] rounded-full object-cover"
+                />
+                <div className="text-left">
+                  <p className="text-sm text-muted-foreground">
+                    {currentBadge.description}
+                  </p>
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* QR Code with Nonce Refresh */}
-          <div className="mx-auto flex flex-col items-center justify-center relative">
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentNonce}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.2 }}
-                className="bg-white p-4 rounded-lg border-2 border-primary cursor-default relative flex items-center justify-center"
-                onClick={e => e.preventDefault()}
-                onKeyDown={e => e.preventDefault()}
-                tabIndex={-1}
-                aria-label="QR Code for claiming POV badge"
-              >
-                {claimUrl ? (
-                  <>
-                    <QRCode
-                      value={claimUrl}
-                      size={200}
-                      className="block md:hidden"
-                    />
-                    <QRCode
-                      value={claimUrl}
-                      size={500}
-                      className="hidden md:block lg:hidden"
-                    />
-                    <QRCode
-                      value={claimUrl}
-                      size={500}
-                      className="hidden lg:block"
-                    />
-                  </>
-                ) : (
-                  <div className="text-center text-muted-foreground">
-                    No badge selected
-                  </div>
-                )}
-              </motion.div>
-            </AnimatePresence>
+            {/* QR Code - right */}
+            <div className="mx-auto flex flex-col items-center justify-center relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentNonce}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.2 }}
+                  className="bg-white p-4 rounded-lg border-2 border-primary cursor-default relative flex items-center justify-center"
+                  onClick={e => e.preventDefault()}
+                  onKeyDown={e => e.preventDefault()}
+                  tabIndex={-1}
+                  aria-label="QR Code for claiming POV badge"
+                >
+                  {claimUrl ? (
+                    <>
+                      <QRCode
+                        value={claimUrl}
+                        size={200}
+                        className="block md:hidden"
+                      />
+                      <QRCode
+                        value={claimUrl}
+                        size={400}
+                        className="hidden md:block lg:hidden"
+                      />
+                      <QRCode
+                        value={claimUrl}
+                        size={400}
+                        className="hidden lg:block"
+                      />
+                    </>
+                  ) : (
+                    <div className="text-center text-muted-foreground">
+                      No badge selected
+                    </div>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
           </div>
 
           {/* Recent Claimers - 2 rows with "more" avatar */}
@@ -338,12 +332,11 @@ export default function QRDisplayPage() {
 
             {claimers.length === 0 ? (
               <div className="text-center py-2 text-sm text-muted-foreground">
-                No claims yet. Use the &quot;Simulate Claim&quot; button to
-                test.
+                No claims yet. Be the first to claim your badge!
               </div>
             ) : (
               <div className="relative">
-                <div className="grid grid-cols-8 gap-1 relative">
+                <div className="grid grid-cols-12 gap-1 relative">
                   <AnimatePresence initial={false}>
                     {displayClaimers.map((claimer, index) => {
                       // Check if this is the newest claimer
@@ -368,7 +361,7 @@ export default function QRDisplayPage() {
                           <img
                             src={claimer.claim?.image || '/placeholder.svg'}
                             alt={claimer.claim?.displayName || 'User'}
-                            className="h-8 w-8 md:h-20 md:w-20 rounded-full object-cover border-2 border-white"
+                            className="h-8 w-8 md:h-16 md:w-16 rounded-full object-cover border-2 border-white"
                             title={claimer.claim?.displayName}
                           />
                           {isNewClaimer && (
@@ -399,11 +392,11 @@ export default function QRDisplayPage() {
                         className="relative flex items-center justify-center"
                       >
                         <div
-                          className="h-8 w-8 rounded-full bg-primary/20 border-2 border-white flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-colors"
+                          className="h-8 w-8 md:h-16 md:w-16  rounded-full bg-primary/20 border-2 border-white flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-colors"
                           title={`${hiddenClaimersCount} more claimers`}
                         >
-                          <span className="text-xs font-bold text-primary flex items-center">
-                            <Plus className="h-3 w-3" />
+                          <span className="text-sm font-bold text-primary flex items-center">
+                            <Plus className="h-4 w-4" />
                             {hiddenClaimersCount}
                           </span>
                         </div>
