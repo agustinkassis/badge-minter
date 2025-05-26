@@ -114,13 +114,15 @@ export default function ClaimPage() {
       setClaimingStage('complete')
       setClaimingProgress(100)
       setTimeout(() => {
-        router.replace(`/claim/success`)
+        router.replace(
+          `/claim/success?npub=${nip19.npubEncode(resolvedPubkey!)}`
+        )
       }, 600)
     } else {
       setError(claimResponse.message)
       setClaimingProgress(0)
     }
-  }, [claimResponse]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [claimResponse, resolvedPubkey]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const startClaimingProcess = () => {
     setShowClaimingAnimation(true)
@@ -340,7 +342,7 @@ export default function ClaimPage() {
             {currentBadge.name}
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-2">
           <motion.div
             initial={{ opacity: 0, scale: 0 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -362,13 +364,13 @@ export default function ClaimPage() {
                 <img
                   src={currentBadge.image || '/placeholder.svg'}
                   alt={currentBadge.name}
-                  className="h-24 w-24 rounded-full object-cover"
+                  className="h-48 w-48 rounded-full object-cover"
                 />
               </motion.div>
             </div>
           </motion.div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-2">
             <div className="space-y-2">
               <motion.div
                 initial={{ opacity: 0, y: -10 }}

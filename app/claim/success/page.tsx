@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import { useSearchParams } from 'next/navigation'
+import { nip19 } from 'nostr-tools'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -18,9 +19,12 @@ import { Footer } from '@/components/footer'
 export default function SuccessPage() {
   const [error, setError] = useState<string | null>(null)
   const [animationComplete, setAnimationComplete] = useState(false)
+
   const confettiCanvasRef = useRef<HTMLCanvasElement>(null)
   const [showBadge, setShowBadge] = useState(false)
   const { currentBadge } = useNostrUser()
+  const searchParams = useSearchParams()
+  const npub = searchParams.get('npub')
 
   useEffect(() => {
     if (!currentBadge) {
@@ -76,6 +80,7 @@ export default function SuccessPage() {
     }
   }
 
+  const badgesProfileUrl = `https://badges.page/p/${npub}`
   const badgesPageUrl = `https://badges.page/a/${currentBadge?.naddr}`
 
   const handleShare = () => {
@@ -248,7 +253,7 @@ export default function SuccessPage() {
             }`}
           >
             <Link
-              href={badgesPageUrl}
+              href={badgesProfileUrl}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -256,7 +261,7 @@ export default function SuccessPage() {
                 variant="outline"
                 className="w-full btn-pill border-primary text-primary hover:bg-primary/10"
               >
-                OPEN BADGES.PAGE
+                OPEN YOUR BADGES.PAGE
               </Button>
             </Link>
 
