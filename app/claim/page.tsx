@@ -33,6 +33,7 @@ export default function ClaimPage() {
   const router = useRouter()
   const nonce = searchParams.get('nonce')
   const naddr = searchParams.get('naddr') || undefined
+  const time = searchParams.get('t') || undefined
   const [nostrAddress, setNostrAddress] = useState('agustin@primal.net')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -95,7 +96,9 @@ export default function ClaimPage() {
 
     setClaimingStage('claiming')
     setClaimingProgress(60)
-    claimBadge(claimContent, nonce!)
+
+    console.info('Claiming badge with nonce', nonce, 'and time', time)
+    claimBadge(claimContent, nonce!, parseInt(time!))
       .then(() => {
         setClaimingProgress(80)
       })
@@ -103,7 +106,7 @@ export default function ClaimPage() {
         console.dir(error)
         setError('Error claiming badge')
       })
-  }, [profile, nostrAddress, nonce, resolvedPubkey]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [profile, nostrAddress, nonce, resolvedPubkey, time]) // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!claimResponse) {

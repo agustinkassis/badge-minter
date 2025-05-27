@@ -10,7 +10,11 @@ export type UserClaimReturn = {
   currentBadge: BadgeDefinition | null
   isLoading: boolean
   claimResponse: { success: boolean; message: string } | null
-  claimBadge: (claimContent: ClaimContent, nonce: string) => Promise<NostrEvent>
+  claimBadge: (
+    claimContent: ClaimContent,
+    nonce: string,
+    time: number
+  ) => Promise<NostrEvent>
 }
 
 export const useUserClaim = (): UserClaimReturn => {
@@ -25,7 +29,7 @@ export const useUserClaim = (): UserClaimReturn => {
   const [adminPubkey, setAdminPubkey] = useState<string | null>(null)
 
   const claimBadge = useCallback(
-    async (claimContent: ClaimContent, nonce: string) => {
+    async (claimContent: ClaimContent, nonce: string, time: number) => {
       if (!nostr) {
         throw new Error('Nostr pool not initialized')
       }
@@ -46,7 +50,8 @@ export const useUserClaim = (): UserClaimReturn => {
             'a',
             `${NostrBadgeDefinitionKind}:${currentBadge.pubkey}:${currentBadge.id}`
           ],
-          ['nonce', nonce]
+          ['nonce', nonce],
+          ['t', time.toString()]
         ],
         content: JSON.stringify(claimContent),
         created_at: Math.floor(Date.now() / 1000),
@@ -68,7 +73,12 @@ export const useUserClaim = (): UserClaimReturn => {
     (event: NostrEvent) => {
       console.info('**** Claim response received ****')
       console.dir(event)
-      setClaimResponse({ success: true, message: 'Badge claimed successfully' })
+
+      const content = JSON.parse(event.content)
+      setClaimResponse({
+        success: content.success,
+        message: content.success ? 'Badge claimed successfully' : content.error
+      })
     },
     [setClaimResponse]
   )

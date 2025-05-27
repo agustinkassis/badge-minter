@@ -9,14 +9,19 @@ import { EventTemplate } from 'nostr-tools'
 import { useNostr } from '@nostrify/react'
 import { getTagValue } from '@/lib/nostr'
 import { ClaimResponseKind } from '@/types/claim'
+import { NonceEntry } from '@/types/nonce'
+
+const NONCE_EXPIRATION_SECONDS = parseInt(
+  process.env.NONCE_EXPIRATION_SECONDS || '120'
+)
 
 export interface UseAdminMintProps {
   onNewAward?: (award: BadgeAward) => void
 }
 
 export interface UseAdminMintReturn {
-  generateNonce: () => string
-  burnNonce: (nonce: string) => boolean
+  generateNonce: () => NonceEntry
+  burnNonce: (nonce: string, t: number) => boolean
   awards: BadgeAward[]
 }
 
@@ -31,11 +36,11 @@ export const useAdminMint = ({
   const { nostr } = useNostr()
 
   const respondClaim = useCallback(
-    async (claimEvent: NostrEvent) => {
+    async (claimEvent: NostrEvent, error: string | null = null) => {
       console.info('Response claim received', claimEvent)
 
       const event = {
-        content: JSON.stringify({ success: true, error: null }),
+        content: JSON.stringify({ success: error === null, error: error }),
         kind: ClaimResponseKind,
         tags: [
           ['p', claimEvent.pubkey],
@@ -58,16 +63,42 @@ export const useAdminMint = ({
   const onClaimRequest = useCallback(
     async (event: NostrEvent) => {
       console.info('Claim request received', event)
-      const badgeAward = await award(
-        event.pubkey,
-        currentBadge!,
-        JSON.parse(event.content)
-      )
 
-      respondClaim(event)
-      onNewAward?.(badgeAward)
+      try {
+        const nonce = getTagValue(event, 'nonce')
+        const t = parseInt(getTagValue(event, 't') || '0')
+
+        if (!nonce) {
+          throw new Error('No nonce')
+        }
+
+        if (!t) {
+          throw new Error('No timestamp')
+        }
+
+        if (t < Math.floor(Date.now() / 1000)) {
+          throw new Error('Timestamp is expired')
+        }
+
+        const valid = burnNonce(nonce, t)
+
+        if (!valid) {
+          throw new Error('Invalid nonce')
+        }
+        console.info('Valid nonce', valid)
+        const badgeAward = await award(
+          event.pubkey,
+          currentBadge!,
+          JSON.parse(event.content)
+        )
+        respondClaim(event)
+        onNewAward?.(badgeAward)
+      } catch (e: unknown) {
+        console.error('Error burning nonce', e)
+        respondClaim(event, (e as Error).message)
+      }
     },
-    [currentBadge, award, onNewAward, respondClaim]
+    [currentBadge, award, onNewAward, respondClaim, now]
   )
 
   // Starts claimRequests subscription
@@ -77,13 +108,26 @@ export const useAdminMint = ({
     onClaimRequest
   })
 
-  const generateNonce = () => {
-    return nonceService.generateNonce()
-  }
+  const generateNonce = useCallback((): NonceEntry => {
+    const now = Math.floor(Date.now() / 1000) + NONCE_EXPIRATION_SECONDS
+    const nonce = nonceService.generateNonce(currentBadge?.naddr || '', now)
+    return {
+      nonce,
+      naddr: currentBadge?.naddr || '',
+      time: now
+    }
+  }, [currentBadge, nonceService])
 
-  const burnNonce = (nonce: string) => {
-    return nonceService.verifyNonce(nonce)
-  }
+  const burnNonce = useCallback(
+    (nonce: string, t: number) => {
+      console.info('Burning nonce', nonce, t)
+      console.info('Current badge', currentBadge)
+
+      // return false
+      return nonceService.verifyNonce(nonce, currentBadge!.naddr!, t)
+    },
+    [currentBadge, nonceService]
+  )
 
   return { generateNonce, burnNonce, awards }
 }

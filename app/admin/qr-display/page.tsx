@@ -17,6 +17,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAdminMint } from '@/hooks/use-admin-mint'
 import { BadgeAward } from '@/types/badge'
+import { NonceEntry } from '@/types/nonce'
 
 const mockBadge = {
   id: 'mock',
@@ -55,14 +56,13 @@ const mockUsers: BadgeAward[] = [
 
 export default function QRDisplayPage() {
   const router = useRouter()
-  const [currentNonce, setCurrentNonce] = useState('')
-  const [copySuccess, setCopySuccess] = useState(false)
+  const [currentNonce, setCurrentNonce] = useState<NonceEntry>()
   const [claimUrl, setClaimUrl] = useState('')
   const [claimers, setClaimers] = useState<BadgeAward[]>([])
   const { toast } = useToast()
   const MAX_VISIBLE_CLAIMERS = 12
   const nonceRefreshInterval = useRef<NodeJS.Timeout | null>(null)
-  const NONCE_REFRESH_INTERVAL = 2000 // 2 seconds
+  const NONCE_REFRESH_INTERVAL = 20000000 // 2 seconds
 
   const { isAuthenticated, currentBadge } = useNostrAdmin()
 
@@ -128,11 +128,12 @@ export default function QRDisplayPage() {
   // Update claim URL when nonce changes
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      setClaimUrl(
-        currentBadge
-          ? `${window.location.origin}/claim?nonce=${currentNonce}&naddr=${currentBadge.naddr}`
+      const claimUrl =
+        currentBadge && currentNonce
+          ? `${window.location.origin}/claim?nonce=${currentNonce.nonce}&naddr=${currentBadge.naddr}&t=${currentNonce.time}`
           : ''
-      )
+      setClaimUrl(claimUrl)
+      console.info('Claim URL:', claimUrl)
     }
   }, [currentNonce, currentBadge])
 
@@ -141,24 +142,6 @@ export default function QRDisplayPage() {
     // Generate a new nonce
     const newNonce = generateNonce()
     setCurrentNonce(newNonce)
-  }
-
-  // Copy claim URL to clipboard
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(claimUrl).then(
-      () => {
-        setCopySuccess(true)
-        setTimeout(() => setCopySuccess(false), 2000)
-      },
-      err => {
-        console.error('Could not copy text: ', err)
-      }
-    )
-  }
-
-  // Open claim URL in new tab
-  const openClaimUrl = () => {
-    router.push(claimUrl)
   }
 
   // Simulate a POV claim
@@ -276,7 +259,7 @@ export default function QRDisplayPage() {
             <div className="mx-auto flex flex-col items-center justify-center relative">
               <AnimatePresence mode="wait">
                 <motion.div
-                  key={currentNonce}
+                  key={currentNonce?.nonce}
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.9 }}
