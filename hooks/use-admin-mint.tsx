@@ -8,7 +8,7 @@ import { useBadges } from '@/hooks/use-badges'
 import { EventTemplate } from 'nostr-tools'
 import { useNostr } from '@nostrify/react'
 import { getTagValue } from '@/lib/nostr'
-import { ClaimResponseKind } from '@/types/claim'
+import { ClaimContent, ClaimResponseKind } from '@/types/claim'
 import { NonceEntry } from '@/types/nonce'
 
 const NONCE_EXPIRATION_SECONDS = parseInt(
@@ -86,11 +86,8 @@ export const useAdminMint = ({
           throw new Error('Invalid nonce')
         }
         console.info('Valid nonce', valid)
-        const badgeAward = await award(
-          event.pubkey,
-          currentBadge!,
-          JSON.parse(event.content)
-        )
+        const claim = JSON.parse(event.content) as ClaimContent
+        const badgeAward = await award(claim.pubkey, currentBadge!, claim)
         respondClaim(event)
         onNewAward?.(badgeAward)
       } catch (e: unknown) {
