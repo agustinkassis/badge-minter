@@ -70,7 +70,8 @@ export const useBadges = ({ badge }: UseBadgesProps): UseBadgesReturn => {
       setAwards(prev => [...prev, award])
 
       // Publish award event **********
-      !DISABLE_PUBLISH && nostr.event(event)
+      nostr.event(event)
+      console.info('Event Published:', award)
 
       return award
     },
