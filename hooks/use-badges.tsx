@@ -67,8 +67,8 @@ export const useBadges = ({ badge }: UseBadgesProps): UseBadgesReturn => {
 
       setAwards(prev => [...prev, award])
 
-      // Publish the event
-      // nostr.event(event)
+      // Publish the event **********
+      nostr.event(event)
 
       return award
     },

@@ -35,7 +35,6 @@ export default function QRDisplayPage() {
 
   const onNewAward = useCallback(
     async (award: BadgeAward) => {
-      console.info('New award:', award)
       addClaimer(award)
 
       toast({
@@ -55,8 +54,7 @@ export default function QRDisplayPage() {
         )
       })
     },
-    // eslint-disable-line react-hooks/exhaustive-deps
-    [toast]
+    [toast, addClaimer]
   )
 
   const { generateNonce } = useAdminMint({ onNewAward })
