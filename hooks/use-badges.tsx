@@ -11,6 +11,7 @@ import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { BadgeAward, BadgeDefinition } from '@/types/badge'
 import { ClaimContent } from '@/types/claim'
 import { getTagValue } from '@/lib/nostr'
+import { useNostr } from '@nostrify/react'
 
 export interface UseBadgesProps {
   badge?: BadgeDefinition | null // If provided, it starts listening for badge awards
@@ -28,7 +29,7 @@ export interface UseBadgesReturn {
 export const useBadges = ({ badge }: UseBadgesProps): UseBadgesReturn => {
   const { signer } = useNostrAdmin()
   const [awards, setAwards] = useState<BadgeAward[]>([])
-  //   const { nostr } = useNostr()
+  const { nostr } = useNostr()
 
   const award = useCallback(
     async (
@@ -67,7 +68,7 @@ export const useBadges = ({ badge }: UseBadgesProps): UseBadgesReturn => {
       setAwards(prev => [...prev, award])
 
       // Publish the event
-      //   nostr.event(event)
+      // nostr.event(event)
 
       return award
     },
