@@ -62,7 +62,7 @@ export default function QRDisplayPage() {
   const { toast } = useToast()
   const MAX_VISIBLE_CLAIMERS = 12
   const nonceRefreshInterval = useRef<NodeJS.Timeout | null>(null)
-  const NONCE_REFRESH_INTERVAL = 20000000 // 2 seconds
+  const NONCE_REFRESH_INTERVAL = 2000 // 2 seconds
 
   const { isAuthenticated, currentBadge } = useNostrAdmin()
 
