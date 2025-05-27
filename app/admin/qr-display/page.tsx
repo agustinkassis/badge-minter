@@ -54,7 +54,7 @@ export default function QRDisplayPage() {
         )
       })
     },
-    [toast, addClaimer]
+    [toast]
   )
 
   const { generateNonce } = useAdminMint({ onNewAward })
