@@ -10,6 +10,7 @@ import { useNostr } from '@nostrify/react'
 import { getTagValue } from '@/lib/nostr'
 import { ClaimContent, ClaimResponseKind } from '@/types/claim'
 import { NonceEntry } from '@/types/nonce'
+import { useClaimers } from './use-claimers'
 
 const NONCE_EXPIRATION_SECONDS = parseInt(
   process.env.NONCE_EXPIRATION_SECONDS || '120'
@@ -34,6 +35,7 @@ export const useAdminMint = ({
   const { signer } = useNostrAdmin()
   const now = useMemo(() => Math.floor(Date.now() / 1000), [])
   const { nostr } = useNostr()
+  const { claimerExists } = useClaimers(currentBadge?.naddr || '')
 
   const respondClaim = useCallback(
     async (claimEvent: NostrEvent, error: string | null = null) => {
@@ -85,13 +87,17 @@ export const useAdminMint = ({
         if (!valid) {
           throw new Error('Invalid nonce')
         }
-        console.info('Valid nonce', valid)
+
         const claim = JSON.parse(event.content) as ClaimContent
+
+        if (claimerExists(claim.pubkey)) {
+          throw new Error('Badge already awarded for this pubkey')
+        }
+
         const badgeAward = await award(claim.pubkey, currentBadge!, claim)
         respondClaim(event)
         onNewAward?.(badgeAward)
       } catch (e: unknown) {
-        console.error('Error burning nonce', e)
         respondClaim(event, (e as Error).message)
       }
     },
