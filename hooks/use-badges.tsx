@@ -13,6 +13,8 @@ import { ClaimContent } from '@/types/claim'
 import { getTagValue } from '@/lib/nostr'
 import { useNostr } from '@nostrify/react'
 
+const DISABLE_PUBLISH = process.env.NEXT_PUBLIC_DISABLE_PUBLISH === 'true'
+
 export interface UseBadgesProps {
   badge?: BadgeDefinition | null // If provided, it starts listening for badge awards
 }
@@ -67,8 +69,8 @@ export const useBadges = ({ badge }: UseBadgesProps): UseBadgesReturn => {
 
       setAwards(prev => [...prev, award])
 
-      // Publish the event **********
-      nostr.event(event)
+      // Publish award event **********
+      !DISABLE_PUBLISH && nostr.event(event)
 
       return award
     },
