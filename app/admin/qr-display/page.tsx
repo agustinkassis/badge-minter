@@ -20,6 +20,7 @@ import { BadgeAward } from '@/types/badge'
 import { NonceEntry } from '@/types/nonce'
 import { mockUsers } from '@/constants/mock'
 import { useClaimers } from '@/hooks/use-claimers'
+import { Button } from '@/components/ui/button'
 
 export default function QRDisplayPage() {
   const router = useRouter()
@@ -31,7 +32,9 @@ export default function QRDisplayPage() {
   const NONCE_REFRESH_INTERVAL = 2000 // 2 seconds
 
   const { isAuthenticated, currentBadge } = useNostrAdmin()
-  const { claimers, addClaimer } = useClaimers(currentBadge?.naddr || '')
+  const { claimers, addClaimer, clearClaimers } = useClaimers(
+    currentBadge?.naddr || ''
+  )
 
   const onNewAward = useCallback(
     async (award: BadgeAward) => {
@@ -168,6 +171,10 @@ export default function QRDisplayPage() {
     )
   }
 
+  const clearStorage = () => {
+    confirm('Are you sure you want to clear the storage?') && clearClaimers()
+  }
+
   return (
     <div className="container relative flex min-h-screen flex-col px-4">
       {/* Toast notifications */}
@@ -183,7 +190,7 @@ export default function QRDisplayPage() {
       <Card className="card-mint border-none mx-auto w-full">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-black tracking-tight text-primary">
-            CLAIM YOUR BADGE
+            CLAIM YOUR BADGE{' '}
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 text-center">
@@ -386,8 +393,24 @@ export default function QRDisplayPage() {
             </Button>
           </div> */}
         </CardContent>
-        <CardFooter className="text-center text-xs text-muted-foreground">
-          Display this QR code at your event for attendees to scan
+        <CardFooter className="text-center text-xs text-muted-foreground flex flex-col">
+          <div>Display this QR code at your event for attendees to scan</div>
+          <div className="mt-6">
+            <Button
+              variant={'link'}
+              className="text-xs"
+              onClick={() => clearStorage()}
+            >
+              Clear Sorage
+            </Button>
+            <Button
+              variant={'link'}
+              className="text-xs"
+              onClick={() => window.open(claimUrl, '_blank')}
+            >
+              Claim
+            </Button>
+          </div>
         </CardFooter>
       </Card>
     </div>
