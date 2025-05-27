@@ -34,7 +34,7 @@ export default function ClaimPage() {
   const nonce = searchParams.get('nonce')
   const naddr = searchParams.get('naddr') || undefined
   const time = searchParams.get('t') || undefined
-  const [nostrAddress, setNostrAddress] = useState('agustin@primal.net')
+  const [nostrAddress, setNostrAddress] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [miningProgress, setClaimingProgress] = useState(0)
