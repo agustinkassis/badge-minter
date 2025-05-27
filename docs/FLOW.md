@@ -8,7 +8,7 @@ This document outlines how we implement badge minting according to [NIP-58](http
 
 ### 1. Nonce Generation
 
-- Admin generates a **32-byte hex nonce**.
+- Admin generates a **16-byte hex nonce**.
 - Valid for a short duration (default: `120` seconds), configurable via environment:
 
   ```env
@@ -20,6 +20,7 @@ This document outlines how we implement badge minting according to [NIP-58](http
 The QR encodes a Claim URL with:
 
 - `nonce`: one-time-use hex string
+- `t`: Expiration timestamp
 - `naddr`: badge definition address
 
   - `kind`: `30009` (badge definition per NIP-58)
@@ -59,7 +60,8 @@ https://example.com/claim?nonce=abc123&naddr=naddr1q...xyz
   "tags": [
     ["p", "BADGE_AUTHOR_PUBKEY"],
     ["a", "30009:BADGE_AUTHOR_PUBKEY:BADGE_ID"],
-    ["nonce", "NONCE"]
+    ["nonce", "NONCE"],
+    ["t", "TIMESTAMP"]
   ],
   // JSON encoded
   "content": {
@@ -86,7 +88,8 @@ Admin backend listens for:
 
 - Check that nonce:
 
-  - Exists and is not expired
+  - Is not expired
+  - Valid hash of `naddr`, `timestamp` and `salt`
   - Has not been used
 
 ### 3. Issue Badge
