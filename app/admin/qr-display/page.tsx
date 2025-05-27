@@ -19,23 +19,24 @@ import { useAdminMint } from '@/hooks/use-admin-mint'
 import { BadgeAward } from '@/types/badge'
 import { NonceEntry } from '@/types/nonce'
 import { mockUsers } from '@/constants/mock'
+import { useClaimers } from '@/hooks/use-claimers'
 
 export default function QRDisplayPage() {
   const router = useRouter()
   const [currentNonce, setCurrentNonce] = useState<NonceEntry>()
   const [claimUrl, setClaimUrl] = useState('')
-  const [claimers, setClaimers] = useState<BadgeAward[]>([])
   const { toast } = useToast()
   const MAX_VISIBLE_CLAIMERS = 12
   const nonceRefreshInterval = useRef<NodeJS.Timeout | null>(null)
   const NONCE_REFRESH_INTERVAL = 2000 // 2 seconds
 
   const { isAuthenticated, currentBadge } = useNostrAdmin()
+  const { claimers, addClaimer } = useClaimers(currentBadge?.naddr || '')
 
   const onNewAward = useCallback(
     async (award: BadgeAward) => {
       console.info('New award:', award)
-      setClaimers(prev => [...prev, award])
+      addClaimer(award)
 
       toast({
         variant: 'primary',
@@ -144,10 +145,7 @@ export default function QRDisplayPage() {
     })
 
     // Add the new claimer
-    setClaimers(prev => [
-      ...prev,
-      { ...randomUser, timestamp: new Date().toISOString() }
-    ])
+    addClaimer(randomUser)
   }
 
   // Calculate how many claimers to display and how many are hidden
