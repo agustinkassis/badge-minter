@@ -207,7 +207,7 @@ export default function QRDisplayPage() {
                 <img
                   src={currentBadge.image || '/placeholder.svg'}
                   alt={currentBadge.name}
-                  className="h-auto w-[65%] rounded-full object-cover"
+                  className="h-auto w-[65%] rounded-full object-cover animate-float [animation-duration:3.5s] shadow-[0_30px_20px_-10px_rgba(100,100,10,0.15)]"
                 />
                 <div className="text-left">
                   <p className="text-sm text-muted-foreground">
