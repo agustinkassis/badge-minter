@@ -5,6 +5,7 @@ export interface UseClaimersReturn {
   claimers: BadgeAward[]
   addClaimer: (award: BadgeAward) => void
   claimerExists: (pubkey: string) => boolean
+  clearClaimers: () => void
 }
 
 export const useClaimers = (naddr: string): UseClaimersReturn => {
@@ -22,9 +23,14 @@ export const useClaimers = (naddr: string): UseClaimersReturn => {
     return claimers.some(claimer => claimer.pubkey === pubkey)
   }
 
+  const clearClaimers = () => {
+    setClaimers([])
+  }
+
   return {
     claimers,
     addClaimer,
-    claimerExists
+    claimerExists,
+    clearClaimers
   }
 }
