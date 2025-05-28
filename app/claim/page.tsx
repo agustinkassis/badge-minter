@@ -154,7 +154,10 @@ export default function ClaimPage() {
     if (isNip05(nostrAddress)) {
       try {
         setClaimingProgress(10)
-        const [name, domain] = nostrAddress.split('@')
+        const [_name, _domain] = nostrAddress.split('@')
+        const name = _name.toLowerCase().trim()
+        const domain = _domain.toLowerCase().trim()
+
         const nip05Url = `https://${domain}/.well-known/nostr.json?name=${name}`
 
         const response = await fetch(nip05Url)
