@@ -230,10 +230,10 @@ export default function ClaimPage() {
             <Button
               className="btn-pill bg-primary text-white hover:bg-primary/90"
               onClick={() => {
-                router.push('/')
+                setError(null)
               }}
             >
-              RETURN TO HOME
+              Go Back
             </Button>
           </CardFooter>
         </Card>
