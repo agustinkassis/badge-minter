@@ -315,8 +315,11 @@ export default function QRDisplayPage() {
                           <img
                             src={claimer.claim?.image || '/placeholder.svg'}
                             alt={claimer.claim?.displayName || 'User'}
-                            className="h-8 w-8 md:h-16 md:w-16 rounded-full object-cover border-2 border-white"
+                            className="h-8 w-8 md:h-16 md:w-16 rounded-full object-contain border-2 border-white"
                             title={claimer.claim?.displayName}
+                            onError={e => {
+                              e.currentTarget.src = '/placeholder.svg'
+                            }}
                           />
                           {isNewClaimer && (
                             <motion.div
