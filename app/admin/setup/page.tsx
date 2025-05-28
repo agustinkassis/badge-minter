@@ -32,7 +32,7 @@ export default function AdminSetupPage() {
   } = useNostrAdmin()
   const [privateKeyInput, setPrivateKeyInput] = useLocalStorage<string | null>(
     'privateKey',
-    NEXT_PUBLIC_MOCK_NSEC
+    NEXT_PUBLIC_MOCK_NSEC || null
   )
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
