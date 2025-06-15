@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Card,
@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card'
-import { CheckCircle, Users, Plus } from 'lucide-react'
+import { CheckCircle, Users, User } from 'lucide-react'
 import QRCode from 'react-qr-code'
 import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { useToast } from '@/hooks/use-toast'
@@ -18,7 +18,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useAdminMint } from '@/hooks/use-admin-mint'
 import { BadgeAward } from '@/types/badge'
 import { NonceEntry } from '@/types/nonce'
-import { mockUsers } from '@/constants/mock'
+import { generateRandomBadgeAward, mockUsers } from '@/constants/mock'
 import { useClaimers } from '@/hooks/use-claimers'
 import { Button } from '@/components/ui/button'
 
@@ -27,7 +27,6 @@ export default function QRDisplayPage() {
   const [currentNonce, setCurrentNonce] = useState<NonceEntry>()
   const [claimUrl, setClaimUrl] = useState('')
   const { toast } = useToast()
-  const MAX_VISIBLE_CLAIMERS = 12
   const nonceRefreshInterval = useRef<NodeJS.Timeout | null>(null)
   const NONCE_REFRESH_INTERVAL = 2000 // 2 seconds
 
@@ -57,6 +56,7 @@ export default function QRDisplayPage() {
         )
       })
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [toast]
   )
 
@@ -114,16 +114,8 @@ export default function QRDisplayPage() {
 
   // Simulate a POV claim
   const simulateClaim = () => {
-    // Get users that haven't claimed yet
-    const availableUsers = mockUsers.filter(
-      user => !claimers.some(claimer => claimer.id === user.id)
-    )
-
-    // If all users have claimed, start over
-    const userPool = availableUsers.length > 0 ? availableUsers : mockUsers
-
     // Select a random user from the available users
-    const randomUser = userPool[Math.floor(Math.random() * userPool.length)]
+    const randomUser = generateRandomBadgeAward()
 
     // Show toast notification
     toast({
@@ -150,18 +142,10 @@ export default function QRDisplayPage() {
   }
 
   // Calculate how many claimers to display and how many are hidden
-  const visibleClaimers = claimers.slice(-MAX_VISIBLE_CLAIMERS)
-  const hiddenClaimersCount = Math.max(
-    0,
-    claimers.length - MAX_VISIBLE_CLAIMERS
+  const displayClaimers = useMemo(
+    () => [...claimers].sort((a, b) => b.event.created_at - a.event.created_at),
+    [claimers]
   )
-
-  // If we have more than MAX_VISIBLE_CLAIMERS, we need to show MAX_VISIBLE_CLAIMERS - 1 avatars
-  // plus the "more" avatar
-  const displayClaimers =
-    hiddenClaimersCount > 0
-      ? visibleClaimers.slice(0, MAX_VISIBLE_CLAIMERS - 1)
-      : visibleClaimers
 
   if (!currentBadge) {
     return (
@@ -289,15 +273,12 @@ export default function QRDisplayPage() {
                 No claims yet. Be the first to claim your badge!
               </div>
             ) : (
-              <div className="relative">
-                <div className="grid grid-cols-12 gap-1 relative">
+              <div className="relative h-auto w-full">
+                <div className="flex gap-4 overflow-x-auto relative">
                   <AnimatePresence initial={false}>
-                    {displayClaimers.map((claimer, index) => {
+                    {displayClaimers.slice(0, 12).map((claimer, index) => {
                       // Check if this is the newest claimer
-                      const isNewClaimer =
-                        index === displayClaimers.length - 1 &&
-                        hiddenClaimersCount === 0 &&
-                        index === claimers.length - 1
+                      const isNewClaimer = index === 0
 
                       return (
                         <motion.div
@@ -310,7 +291,7 @@ export default function QRDisplayPage() {
                             damping: 30,
                             delay: isNewClaimer ? 0 : 0
                           }}
-                          className="relative flex items-center justify-center"
+                          className="relative flex items-center justify-center flex-shrink-0"
                         >
                           <img
                             src={claimer.claim?.image || '/placeholder.svg'}
@@ -326,19 +307,19 @@ export default function QRDisplayPage() {
                               initial={{ scale: 1.5, opacity: 0 }}
                               animate={{ scale: 1, opacity: 1 }}
                               transition={{ duration: 0.3 }}
-                              className="absolute -top-1 -right-1 bg-primary rounded-full p-0.5"
+                              className="absolute top-0 right-0 bg-primary rounded-full p-0.5"
                             >
-                              <CheckCircle className="h-3 w-3 text-white" />
+                              <CheckCircle className="h-4 w-4 text-white" />
                             </motion.div>
                           )}
                         </motion.div>
                       )
                     })}
 
-                    {/* "More" avatar for hidden claimers */}
-                    {hiddenClaimersCount > 0 && (
+                    {/* Remaining claimers */}
+                    {displayClaimers.slice(12).map((claimer, index) => (
                       <motion.div
-                        key="more-avatar"
+                        key={`${claimer.id}`}
                         initial={{ scale: 0, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
                         transition={{
@@ -346,19 +327,19 @@ export default function QRDisplayPage() {
                           stiffness: 500,
                           damping: 30
                         }}
-                        className="relative flex items-center justify-center"
+                        className="relative flex items-center justify-center flex-shrink-0"
                       >
-                        <div
-                          className="h-8 w-8 md:h-16 md:w-16  rounded-full bg-primary/20 border-2 border-white flex items-center justify-center cursor-pointer hover:bg-primary/30 transition-colors"
-                          title={`${hiddenClaimersCount} more claimers`}
-                        >
-                          <span className="text-sm font-bold text-primary flex items-center">
-                            <Plus className="h-4 w-4" />
-                            {hiddenClaimersCount}
-                          </span>
-                        </div>
+                        <img
+                          src={claimer.claim?.image || '/placeholder.svg'}
+                          alt={claimer.claim?.displayName || 'User'}
+                          className="h-8 w-8 md:h-16 md:w-16 rounded-full object-contain border-2 border-white"
+                          title={claimer.claim?.displayName}
+                          onError={e => {
+                            e.currentTarget.src = '/placeholder.svg'
+                          }}
+                        />
                       </motion.div>
-                    )}
+                    ))}
                   </AnimatePresence>
                 </div>
               </div>
@@ -366,8 +347,8 @@ export default function QRDisplayPage() {
           </div>
 
           {/* Test buttons */}
-          {/* <div className="flex gap-2 justify-center">
-            <Button
+          <div className="flex gap-2 justify-center">
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={copyToClipboard}
@@ -375,8 +356,8 @@ export default function QRDisplayPage() {
             >
               <Copy className="h-4 w-4 mr-2" />
               {copySuccess ? 'Copied!' : 'Copy URL'}
-            </Button>
-            <Button
+            </Button> */}
+            {/* <Button
               variant="outline"
               size="sm"
               onClick={openClaimUrl}
@@ -384,7 +365,7 @@ export default function QRDisplayPage() {
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               Test URL
-            </Button>
+            </Button> */}
             <Button
               variant="outline"
               size="sm"
@@ -394,7 +375,7 @@ export default function QRDisplayPage() {
               <User className="h-4 w-4 mr-2" />
               Simulate Claim
             </Button>
-          </div> */}
+          </div>
         </CardContent>
         <CardFooter className="text-center text-xs text-muted-foreground flex flex-col">
           <div>Display this QR code at your event for attendees to scan</div>
