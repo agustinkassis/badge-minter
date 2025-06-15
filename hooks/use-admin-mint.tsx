@@ -16,6 +16,9 @@ const NONCE_EXPIRATION_SECONDS = parseInt(
   process.env.NONCE_EXPIRATION_SECONDS || '120'
 )
 
+const ALLOW_DUPLICATE_AWARDS =
+  process.env.NEXT_PUBLIC_ALLOW_DUPLICATE_AWARDS === 'true'
+
 export interface UseAdminMintProps {
   onNewAward?: (award: BadgeAward) => void
 }
@@ -90,7 +93,7 @@ export const useAdminMint = ({
 
         const claim = JSON.parse(event.content) as ClaimContent
 
-        if (claimerExists(claim.pubkey)) {
+        if (!ALLOW_DUPLICATE_AWARDS && claimerExists(claim.pubkey)) {
           throw new Error('Badge already awarded for this pubkey')
         }
 
