@@ -1,8 +1,6 @@
 'use client'
 
-import type React from 'react'
-
-import { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import {
@@ -40,6 +38,43 @@ export default function AdminSetupPage() {
   const [tab, setTab] = useState<'privateKey' | 'bunker'>('privateKey')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [bunkerSessionPresent, setBunkerSessionPresent] = useState(false)
+
+  // Check for bunker session in localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setBunkerSessionPresent(!!localStorage.getItem('nostrBunkerSession'))
+    }
+  }, [tab])
+
+  // Auto-connect to bunker if tab is 'bunker' and session exists
+  useEffect(() => {
+    if (
+      tab === 'bunker' &&
+      typeof window !== 'undefined' &&
+      loginMethod !== 'bunker'
+    ) {
+      const sessionStr = localStorage.getItem('nostrBunkerSession')
+      if (sessionStr) {
+        try {
+          const { pubkey, relay, secret } = JSON.parse(sessionStr)
+          if (pubkey && relay) {
+            setBunkerConnection({ pubkey, relay, secret })
+          }
+        } catch (e) {
+          // Ignore errors
+        }
+      }
+    }
+  }, [tab, bunkerSessionPresent, loginMethod, setBunkerConnection])
+
+  const handleRemoveBunkerSession = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('nostrBunkerSession')
+      setBunkerSessionPresent(false)
+      setBunkerInput('')
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,6 +92,21 @@ export default function AdminSetupPage() {
           router.push('/admin/select-badge')
         }, 1000)
       } else if (tab === 'bunker') {
+        if (!bunkerInput.trim() && bunkerSessionPresent) {
+          // Use stored session
+          const sessionStr = localStorage.getItem('nostrBunkerSession')
+          if (sessionStr) {
+            const { pubkey, relay, secret } = JSON.parse(sessionStr)
+            await setBunkerConnection({ pubkey, relay, secret })
+            setTimeout(() => {
+              setIsLoading(false)
+              router.push('/admin/select-badge')
+            }, 1000)
+            return
+          } else {
+            throw new Error('No stored bunker session found')
+          }
+        }
         if (!bunkerInput.trim()) {
           throw new Error('Bunker connection string is required')
         }
@@ -182,15 +232,29 @@ export default function AdminSetupPage() {
                 <Label htmlFor="bunker" className="font-bold">
                   BUNKER CONNECTION STRING
                 </Label>
-                <Input
-                  id="bunker"
-                  type="text"
-                  placeholder="bunker://npub...@relay?secret=..."
-                  value={bunkerInput}
-                  onChange={e => setBunkerInput(e.target.value)}
-                  className="border-primary"
-                  required
-                />
+                <div className="relative flex flex-col">
+                  {bunkerSessionPresent ? (
+                    <Button
+                      type="button"
+                      variant={'destructive'}
+                      className="w-full"
+                      onClick={handleRemoveBunkerSession}
+                    >
+                      Remove Stored Bunker Key
+                    </Button>
+                  ) : (
+                    <Input
+                      id="bunker"
+                      type="text"
+                      placeholder="bunker://npub...@relay?secret=..."
+                      value={bunkerInput}
+                      onChange={e => setBunkerInput(e.target.value)}
+                      className="border-primary"
+                      disabled={isLoading || contextLoading}
+                      required
+                    />
+                  )}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   Paste your nsec bunker connection string (format:
                   bunker://npub...@relay?secret=...)
@@ -204,7 +268,8 @@ export default function AdminSetupPage() {
                 (tab === 'privateKey' &&
                   (!privateKeyInput || isLoading || contextLoading)) ||
                 (tab === 'bunker' &&
-                  (!bunkerInput || isLoading || contextLoading))
+                  (!bunkerInput || isLoading || contextLoading) &&
+                  !bunkerSessionPresent)
               }
             >
               {isLoading || contextLoading

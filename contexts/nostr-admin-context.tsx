@@ -54,15 +54,17 @@ export function NostrAdminProvider({ children }: { children: ReactNode }) {
   const { nostr } = useNostr()
   const [signer, setSigner] = useState<NSecSigner | NConnectSigner | null>(null)
 
-  // Initialize from sessionStorage on mount
+  // Initialize from sessionStorage/localStorage on mount
   useEffect(() => {
     const storedPrivateKey = sessionStorage.getItem('nostrPrivateKey')
     const storedLoginMethod = sessionStorage.getItem('nostrLoginMethod')
     if (storedPrivateKey && storedLoginMethod === 'privateKey') {
       setPrivateKeyState(storedPrivateKey)
       setLoginMethod('privateKey')
+    } else if (storedLoginMethod === 'bunker') {
+      // Only set loginMethod, do not auto-connect
+      setLoginMethod('bunker')
     }
-    // Bunker session restore could be added here if needed
   }, [])
 
   // Derive public key when private key changes (privateKey login)
@@ -114,10 +116,36 @@ export function NostrAdminProvider({ children }: { children: ReactNode }) {
     try {
       setLoginMethod('bunker')
       sessionStorage.setItem('nostrLoginMethod', 'bunker')
-      // Optionally store pubkey/relay/secret for session restore
+      // Try to get localKeyHex from localStorage
+      let localKeyHex: string | undefined
+      let localKey: Uint8Array | undefined
+      const sessionStr = localStorage.getItem('nostrBunkerSession')
+      if (sessionStr) {
+        try {
+          const session = JSON.parse(sessionStr)
+          if (
+            session.pubkey === pubkey &&
+            session.relay === relay &&
+            typeof session.localKeyHex === 'string'
+          ) {
+            localKeyHex = session.localKeyHex
+            if (localKeyHex) {
+              localKey = hexToBytes(localKeyHex)
+            }
+          }
+        } catch {}
+      }
+      if (!localKeyHex || !localKey) {
+        localKey = generateSecretKey()
+        localKeyHex = bytesToHex(localKey)
+      }
+      // Always persist the session
+      localStorage.setItem(
+        'nostrBunkerSession',
+        JSON.stringify({ pubkey, relay, secret, localKeyHex })
+      )
       const relayObj = new NRelay1(relay)
-      // Use a valid random local signer for encryption (not used for signing)
-      const local = new NSecSigner(generateSecretKey())
+      const local = new NSecSigner(localKey)
       const s = new NConnectSigner({ pubkey, signer: local, relay: relayObj })
       if (secret) await s.connect(secret)
       setSigner(s)
@@ -128,6 +156,7 @@ export function NostrAdminProvider({ children }: { children: ReactNode }) {
       setError(error instanceof Error ? error : new Error(String(error)))
       clearKeys()
       setIsLoading(false)
+      throw error
     }
   }
 
@@ -144,6 +173,7 @@ export function NostrAdminProvider({ children }: { children: ReactNode }) {
     setLoginMethod(null)
     sessionStorage.removeItem('nostrPrivateKey')
     sessionStorage.removeItem('nostrLoginMethod')
+    localStorage.removeItem('nostrBunkerSession')
   }
 
   const value = {
