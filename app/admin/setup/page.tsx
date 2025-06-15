@@ -12,12 +12,13 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { ArrowLeft, Key, AlertCircle } from 'lucide-react'
+import { ArrowLeft, Key, AlertCircle, QrCode } from 'lucide-react'
 import Link from 'next/link'
 import { useNostrAdmin } from '@/contexts/nostr-admin-context'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Footer } from '@/components/footer'
 import useLocalStorage from '@/hooks/use-local-storage'
+import { QRScannerModal } from '@/components/qr-scanner-modal'
 
 const NEXT_PUBLIC_MOCK_NSEC = process.env.NEXT_PUBLIC_MOCK_NSEC || ''
 
@@ -39,6 +40,9 @@ export default function AdminSetupPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [bunkerSessionPresent, setBunkerSessionPresent] = useState(false)
+  const [showQRScanner, setShowQRScanner] = useState<
+    'privateKey' | 'bunker' | null
+  >(null)
 
   // Check for bunker session in localStorage
   useEffect(() => {
@@ -218,6 +222,16 @@ export default function AdminSetupPage() {
                         className="pl-10 pr-10 border-primary"
                         required
                       />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-9 w-9 flex items-center justify-center active:top-1"
+                        onClick={() => setShowQRScanner('privateKey')}
+                        aria-label="Scan QR for private key"
+                      >
+                        <QrCode className="h-5 w-5 text-primary" />
+                      </Button>
                     </>
                   )}
                 </div>
@@ -243,16 +257,28 @@ export default function AdminSetupPage() {
                       Remove Stored Bunker Key
                     </Button>
                   ) : (
-                    <Input
-                      id="bunker"
-                      type="text"
-                      placeholder="bunker://npub...@relay?secret=..."
-                      value={bunkerInput}
-                      onChange={e => setBunkerInput(e.target.value)}
-                      className="border-primary"
-                      disabled={isLoading || contextLoading}
-                      required
-                    />
+                    <>
+                      <Input
+                        id="bunker"
+                        type="text"
+                        placeholder="bunker://npub...@relay?secret=..."
+                        value={bunkerInput}
+                        onChange={e => setBunkerInput(e.target.value)}
+                        className="border-primary"
+                        disabled={isLoading || contextLoading}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="absolute right-1 top-1/2 transform -translate-y-1/2 h-9 w-9 flex items-center justify-center active:top-1"
+                        onClick={() => setShowQRScanner('bunker')}
+                        aria-label="Scan QR for bunker connection"
+                      >
+                        <QrCode className="h-5 w-5 text-primary" />
+                      </Button>
+                    </>
                   )}
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -282,6 +308,18 @@ export default function AdminSetupPage() {
         </CardContent>
       </Card>
       <Footer />
+      <QRScannerModal
+        open={!!showQRScanner}
+        onClose={() => setShowQRScanner(null)}
+        onScan={value => {
+          if (showQRScanner === 'privateKey') {
+            setPrivateKeyInput(value)
+          } else if (showQRScanner === 'bunker') {
+            setBunkerInput(value)
+          }
+          setShowQRScanner(null)
+        }}
+      />
     </div>
   )
 }
